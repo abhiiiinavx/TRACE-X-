@@ -2,7 +2,7 @@
 
 import { Suspense, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { Radar, Search } from "lucide-react";
+import { Compass, Search, Globe, Server, ShieldAlert, ArrowRight } from "lucide-react";
 import { searchThreatIntel } from "@/lib/api";
 
 function ThreatIntelContent() {
@@ -22,7 +22,7 @@ function ThreatIntelContent() {
       const data = await searchThreatIntel(q.trim());
       setResults(data);
     } catch (err: any) {
-      setError(err.message || "Failed to query intelligence database");
+      setError(err.message || "Failed to query threat intelligence database");
     } finally {
       setLoading(false);
     }
@@ -41,38 +41,41 @@ function ThreatIntelContent() {
   };
 
   return (
-    <div className="space-y-5 max-w-5xl">
-      <div className="border-b border-[#1F2933] pb-4">
-        <h1 className="text-xl font-semibold text-[#E6EBF0] tracking-tight">
-          Universal Threat Intelligence Search
+    <div className="space-y-6 max-w-5xl mx-auto pb-12">
+      <div>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-[#0F172A]">
+          Threat Intelligence Lookup
         </h1>
-        <p className="text-xs text-[#7C8896] mt-0.5">
-          Query IP addresses, lookalike domains, URLs, file hashes, and ASNs across our threat intelligence repository.
+        <p className="text-xs md:text-sm text-[#64748B] mt-1">
+          Query IP addresses, lookalike domains, URLs, file hashes, and ASNs across our global threat repository
         </p>
       </div>
 
       {/* Search Input Box */}
-      <form onSubmit={handleSubmit} className="soc-card p-3 flex gap-2">
-        <input
-          type="text"
-          placeholder="Enter IP (e.g. 194.36.189.44), Domain, URL, or SHA-256 hash..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          className="flex-1 bg-[#0B0F14] border border-[#1F2933] rounded-md px-3 py-2 text-xs text-[#E6EBF0] font-mono placeholder-[#7C8896] focus:outline-none focus:border-[#2DD4BF]"
-        />
+      <form onSubmit={handleSubmit} className="clean-card p-3 flex gap-2.5 shadow-sm">
+        <div className="relative flex-1">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94A3B8]" />
+          <input
+            type="text"
+            placeholder="Enter IP (e.g. 194.36.189.44), Domain, URL, or SHA-256 hash..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl pl-10 pr-4 py-2.5 text-xs text-[#0F172A] font-mono placeholder-[#94A3B8] focus:outline-none focus:border-[#4F46E5] focus:bg-white"
+          />
+        </div>
         <button
           type="submit"
           disabled={loading}
-          className="bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#0B0F14] font-semibold px-4 py-2 rounded-md text-xs flex items-center gap-1.5 cursor-pointer transition-colors disabled:opacity-50"
+          className="bg-[#4F46E5] hover:bg-[#4338CA] text-white font-bold px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 cursor-pointer transition-colors disabled:opacity-50"
         >
-          <Search className="w-3.5 h-3.5" />
+          <Search className="w-4 h-4" />
           <span>{loading ? "Searching..." : "Search"}</span>
         </button>
       </form>
 
       {/* Suggested Quick Searches */}
-      <div className="flex items-center gap-2 text-xs text-[#7C8896] flex-wrap">
-        <span>Suggested IOCs:</span>
+      <div className="flex items-center gap-2 text-xs text-[#64748B] flex-wrap">
+        <span className="font-semibold">Suggested IOCs:</span>
         {["194.36.189.44", "185.220.101.5", "paypa1-security.com", "auth-microsoft365-verify.com", "AS48282"].map((ioc) => (
           <button
             key={ioc}
@@ -80,7 +83,7 @@ function ThreatIntelContent() {
               setQuery(ioc);
               performSearch(ioc);
             }}
-            className="text-[11px] font-mono bg-[#161D26] hover:bg-[#1F2933] text-[#E6EBF0] px-2 py-0.5 rounded cursor-pointer transition-colors"
+            className="text-xs font-mono bg-white hover:bg-[#EEF2FF] hover:text-[#4F46E5] text-[#334155] px-3 py-1 rounded-lg border border-[#E2E8F0] cursor-pointer transition-colors shadow-2xs"
           >
             {ioc}
           </button>
@@ -88,27 +91,27 @@ function ThreatIntelContent() {
       </div>
 
       {error && (
-        <div className="p-3 rounded-md bg-[rgba(229,72,77,0.12)] border border-[rgba(229,72,77,0.25)] text-xs text-[#E5484D]">
+        <div className="p-4 rounded-xl bg-[#FEF2F2] border border-[#FEE2E2] text-xs text-[#DC2626] font-medium">
           {error}
         </div>
       )}
 
       {/* Results View */}
       {results && (
-        <div className="soc-card p-4 space-y-4">
-          <div className="flex items-center justify-between border-b border-[#1F2933] pb-3">
+        <div className="clean-card p-6 space-y-6">
+          <div className="flex items-center justify-between border-b border-[#F1F5F9] pb-4">
             <div>
-              <span className="text-[10px] font-mono uppercase text-[#2DD4BF]">
+              <span className="text-xs font-bold text-[#4F46E5] uppercase tracking-wider">
                 {results.type} Telemetry Report
               </span>
-              <h2 className="text-sm font-bold text-[#E6EBF0] font-mono mt-0.5">
+              <h2 className="text-lg font-bold text-[#0F172A] font-mono mt-0.5">
                 {results.query}
               </h2>
             </div>
             {results.intel?.risk_score !== undefined && (
               <div className="text-right">
-                <div className="text-[10px] text-[#7C8896] font-mono">Risk Score</div>
-                <div className="text-xl font-bold text-[#E5484D] font-mono">
+                <div className="text-xs text-[#64748B]">Risk Score</div>
+                <div className="text-2xl font-extrabold text-[#EF4444] font-mono">
                   {results.intel.risk_score}/100
                 </div>
               </div>
@@ -117,31 +120,31 @@ function ThreatIntelContent() {
 
           {/* Render based on Type */}
           {results.type === "IP" && (
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-              <div className="soc-card-nested p-3">
-                <div className="text-[10px] text-[#7C8896] font-mono">Location</div>
-                <div className="font-semibold text-[#E6EBF0] mt-0.5">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+              <div className="clean-card-nested p-4">
+                <div className="text-xs text-[#64748B] font-semibold">Location</div>
+                <div className="font-bold text-sm text-[#0F172A] mt-1">
                   {results.intel.city ? `${results.intel.city}, ` : ""}{results.intel.country}
                 </div>
-                <div className="text-[10px] text-[#7C8896] font-mono mt-0.5">
+                <div className="text-xs text-[#64748B] font-mono mt-1">
                   Lat: {results.intel.lat} • Lng: {results.intel.lng}
                 </div>
               </div>
 
-              <div className="soc-card-nested p-3">
-                <div className="text-[10px] text-[#7C8896] font-mono">Autonomous System (ASN)</div>
-                <div className="font-mono text-[#2DD4BF] font-semibold mt-0.5">
+              <div className="clean-card-nested p-4">
+                <div className="text-xs text-[#64748B] font-semibold">Autonomous System (ASN)</div>
+                <div className="font-mono text-sm text-[#4F46E5] font-bold mt-1">
                   {results.intel.asn}
                 </div>
-                <div className="text-[10px] text-[#7C8896] mt-0.5 truncate">{results.intel.asn_org}</div>
+                <div className="text-xs text-[#64748B] mt-1 truncate">{results.intel.asn_org}</div>
               </div>
 
-              <div className="soc-card-nested p-3">
-                <div className="text-[10px] text-[#7C8896] font-mono">Classification</div>
-                <div className="font-semibold text-[#E6EBF0] mt-0.5">
+              <div className="clean-card-nested p-4">
+                <div className="text-xs text-[#64748B] font-semibold">Classification</div>
+                <div className="font-bold text-sm text-[#0F172A] mt-1">
                   {results.intel.node_type}
                 </div>
-                <div className="text-[10px] text-[#7C8896] font-mono mt-0.5">
+                <div className="text-xs text-[#64748B] mt-1">
                   Attribution: {results.intel.attribution_confidence}%
                 </div>
               </div>
@@ -149,32 +152,32 @@ function ThreatIntelContent() {
           )}
 
           {results.type === "DOMAIN" && (
-            <div className="space-y-3">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                <div className="soc-card-nested p-3">
-                  <div className="text-[10px] text-[#7C8896] font-mono">Registrar</div>
-                  <div className="font-semibold text-[#E6EBF0] mt-0.5">{results.intel.registrar}</div>
-                  <div className="text-[10px] text-[#7C8896] font-mono mt-0.5">Age: {results.intel.age_days}d</div>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                <div className="clean-card-nested p-4">
+                  <div className="text-xs text-[#64748B] font-semibold">Registrar</div>
+                  <div className="font-bold text-sm text-[#0F172A] mt-1">{results.intel.registrar}</div>
+                  <div className="text-xs text-[#64748B] font-mono mt-1">Age: {results.intel.age_days}d</div>
                 </div>
 
-                <div className="soc-card-nested p-3">
-                  <div className="text-[10px] text-[#7C8896] font-mono">Brand Impersonation</div>
-                  <div className="font-semibold text-[#E5484D] mt-0.5">
+                <div className="clean-card-nested p-4">
+                  <div className="text-xs text-[#64748B] font-semibold">Brand Impersonation</div>
+                  <div className="font-bold text-sm text-[#EF4444] mt-1">
                     {results.intel.is_lookalike ? `TARGETS ${results.intel.impersonated_brand}` : "AUTHENTIC"}
                   </div>
-                  <div className="text-[10px] text-[#7C8896] mt-0.5">{results.intel.lookalike_technique || "None"}</div>
+                  <div className="text-xs text-[#64748B] mt-1">{results.intel.lookalike_technique || "None"}</div>
                 </div>
 
-                <div className="soc-card-nested p-3">
-                  <div className="text-[10px] text-[#7C8896] font-mono">Resolved IP</div>
-                  <div className="font-mono text-[#2DD4BF] font-semibold mt-0.5">
+                <div className="clean-card-nested p-4">
+                  <div className="text-xs text-[#64748B] font-semibold">Resolved IP</div>
+                  <div className="font-mono text-sm text-[#4F46E5] font-bold mt-1">
                     {results.intel.a_records?.[0] || "194.36.189.44"}
                   </div>
                 </div>
               </div>
 
               {results.intel.reason_summary && (
-                <div className="soc-card-nested p-3 text-xs text-[#7C8896]">
+                <div className="clean-card-nested p-4 text-xs text-[#334155] leading-relaxed">
                   {results.intel.reason_summary}
                 </div>
               )}
@@ -182,25 +185,48 @@ function ThreatIntelContent() {
           )}
 
           {results.type === "URL" && (
-            <div className="space-y-2.5 text-xs">
-              <div className="soc-card-nested p-3 font-mono">
-                <div className="text-[10px] text-[#7C8896]">Destination:</div>
-                <div className="text-[#2DD4BF] font-semibold break-all mt-0.5">{results.intel.final_url}</div>
-              </div>
+            <div className="clean-card-nested p-4 font-mono text-xs">
+              <div className="text-xs text-[#64748B] mb-1">Destination URL:</div>
+              <div className="text-[#4F46E5] font-bold break-all">{results.intel.final_url}</div>
             </div>
           )}
 
           {results.type === "HASH" && (
-            <div className="soc-card-nested p-3 text-xs flex items-center justify-between">
+            <div className="clean-card-nested p-4 text-xs flex items-center justify-between">
               <div>
-                <span className="font-mono font-semibold text-[#E6EBF0]">{results.intel.threat_name}</span>
-                <div className="text-[10px] text-[#7C8896] font-mono mt-0.5">AV Engine Detection: {results.intel.detection_ratio}</div>
+                <span className="font-bold text-sm text-[#0F172A]">{results.intel.threat_name}</span>
+                <div className="text-xs text-[#64748B] font-mono mt-1">AV Engine Detection: {results.intel.detection_ratio}</div>
               </div>
-              <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-[rgba(229,72,77,0.12)] text-[#E5484D]">
+              <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#FEF2F2] text-[#EF4444]">
                 {results.intel.reputation}
               </span>
             </div>
           )}
+
+          {/* Direct Action Links */}
+          <div className="pt-4 border-t border-[#F1F5F9] flex items-center gap-3 flex-wrap">
+            <button
+              onClick={() => window.location.href = "/analyze"}
+              className="bg-[#4F46E5] hover:bg-[#4338CA] text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <span>Scan in Analyze Workspace</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => window.location.href = "/attack-graph"}
+              className="bg-white hover:bg-[#F8FAFC] border border-[#E2E8F0] text-[#0F172A] font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <span>Explore in Attack Graph</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => window.location.href = "/campaigns"}
+              className="bg-white hover:bg-[#F8FAFC] border border-[#E2E8F0] text-[#0F172A] font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <span>View Campaign DNA</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
       )}
     </div>
@@ -209,7 +235,7 @@ function ThreatIntelContent() {
 
 export default function ThreatIntelPage() {
   return (
-    <Suspense fallback={<div className="p-6 text-[#7C8896] font-mono text-xs">Loading Threat Intelligence...</div>}>
+    <Suspense fallback={<div className="p-6 text-[#64748B] font-medium text-sm">Loading Threat Intelligence...</div>}>
       <ThreatIntelContent />
     </Suspense>
   );

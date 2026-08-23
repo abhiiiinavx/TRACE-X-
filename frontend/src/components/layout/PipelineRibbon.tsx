@@ -1,51 +1,82 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import {
+  FileSearch,
+  ShieldCheck,
+  Brain,
+  Route,
+  MapPin,
+  Globe,
+  Network,
+  Dna,
+  Clock,
+  CheckSquare,
+  Lock
+} from "lucide-react";
+
 interface PipelineRibbonProps {
   activeStage?: string;
-  onSelectStage?: (stage: string) => void;
+  onSelectStage?: (stageId: string) => void;
 }
 
 const STAGES = [
-  { id: "detect", name: "Detect" },
-  { id: "explain", name: "Explain" },
-  { id: "trace", name: "Trace" },
-  { id: "geolocate", name: "Geolocate" },
-  { id: "correlate", name: "Correlate" },
-  { id: "cluster", name: "Cluster" },
-  { id: "visualize", name: "Visualize" },
-  { id: "investigate", name: "Investigate" },
-  { id: "report", name: "Report" },
+  { id: "ingest", name: "Ingest", href: "/analyze?tab=overview", icon: FileSearch },
+  { id: "auth", name: "Auth Validate", href: "/analyze?tab=overview", icon: ShieldCheck },
+  { id: "explain", name: "NLP / Heuristics", href: "/analyze?tab=explain", icon: Brain },
+  { id: "trace", name: "Hop Forensics", href: "/analyze?tab=trace", icon: Route },
+  { id: "geolocate", name: "Geo Matrix", href: "/analyze?tab=geolocate", icon: MapPin },
+  { id: "intel", name: "Domain Intel", href: "/threat-intel", icon: Globe },
+  { id: "graph", name: "Attack Graph", href: "/attack-graph", icon: Network },
+  { id: "campaign", name: "Campaign DNA", href: "/campaigns", icon: Dna },
+  { id: "timeline", name: "Timeline", href: "/analyze?tab=timeline", icon: Clock },
+  { id: "actions", name: "Actions", href: "/cases", icon: CheckSquare },
+  { id: "evidence", name: "Evidence Vault", href: "/reports", icon: Lock }
 ];
 
-export default function PipelineRibbon({ activeStage, onSelectStage }: PipelineRibbonProps) {
+export default function PipelineRibbon({ activeStage = "ingest", onSelectStage }: PipelineRibbonProps) {
+  const router = useRouter();
+
+  const handleStageClick = (stage: typeof STAGES[0]) => {
+    if (onSelectStage) {
+      onSelectStage(stage.id);
+    } else {
+      router.push(stage.href);
+    }
+  };
+
   return (
-    <div className="w-full bg-[#0B0F14] border-b border-[#1F2933] px-6 py-2 overflow-x-auto select-none">
-      <div className="flex items-center justify-between min-w-[700px] gap-1">
+    <div className="w-full bg-white border border-[#E2E8F0] rounded-2xl p-2.5 shadow-2xs overflow-x-auto select-none">
+      <div className="flex items-center min-w-max">
         {STAGES.map((stage, idx) => {
-          const isActive = activeStage?.toLowerCase() === stage.id;
+          const isSelected = activeStage === stage.id || activeStage === stage.name.toLowerCase();
+          const Icon = stage.icon;
+
           return (
-            <div key={stage.id} className="flex items-center flex-1">
+            <div key={idx} className="flex items-center">
               <button
-                onClick={() => onSelectStage && onSelectStage(stage.id)}
-                className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs transition-colors cursor-pointer w-full ${
-                  isActive
-                    ? "bg-[#161D26] text-[#2DD4BF] font-semibold"
-                    : "text-[#7C8896] hover:text-[#E6EBF0] hover:bg-[#10161D]"
+                onClick={() => handleStageClick(stage)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  isSelected
+                    ? "bg-[#EEF2FF] text-[#4F46E5] shadow-2xs"
+                    : "text-[#64748B] hover:text-[#0F172A] hover:bg-[#F8FAFC]"
                 }`}
               >
-                <span
-                  className={`w-5 h-5 rounded flex items-center justify-center text-[10px] font-mono font-bold ${
-                    isActive
-                      ? "bg-[#2DD4BF] text-[#0B0F14]"
-                      : "bg-[#161D26] text-[#7C8896]"
+                <div
+                  className={`w-5 h-5 rounded-lg flex items-center justify-center text-[10px] font-bold ${
+                    isSelected
+                      ? "bg-[#4F46E5] text-white"
+                      : "bg-[#F1F5F9] text-[#64748B]"
                   }`}
                 >
                   {idx + 1}
-                </span>
-                <span className="truncate">{stage.name}</span>
+                </div>
+                <Icon className="w-3.5 h-3.5" />
+                <span>{stage.name}</span>
               </button>
+
               {idx < STAGES.length - 1 && (
-                <span className="text-[#1F2933] text-xs px-1 select-none">/</span>
+                <div className="w-3 h-0.5 bg-[#E2E8F0] mx-1"></div>
               )}
             </div>
           );

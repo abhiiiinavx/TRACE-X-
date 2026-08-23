@@ -1,63 +1,80 @@
 @import "tailwindcss";
 
 :root {
-  --bg-base: #0B0F14;
-  --bg-surface: #10161D;
-  --bg-surface-2: #161D26;
-  --border: #1F2933;
-  --border-subtle: #19222C;
-  --text-primary: #E6EBF0;
-  --text-muted: #7C8896;
-  --text-subtle: #4B5563;
+  /* Modern Clean Light SaaS Theme (matching SpamShield reference) */
+  --bg-base: #F8FAFC;
+  --bg-surface: #FFFFFF;
+  --bg-surface-secondary: #F1F5F9;
+  --border-light: #E2E8F0;
+  --border-subtle: #F1F5F9;
 
-  --accent-primary: #2DD4BF;
-  --accent-primary-hover: #14B8A6;
-  --accent-muted: rgba(45, 212, 191, 0.12);
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #94A3B8;
 
-  --severity-critical: #E5484D;
-  --severity-critical-bg: rgba(229, 72, 77, 0.12);
-  --severity-critical-border: rgba(229, 72, 77, 0.3);
+  /* Primary Signature: Royal Purple / Indigo */
+  --primary: #4F46E5;
+  --primary-hover: #4338CA;
+  --primary-light: #EEF2FF;
+  --primary-border: #C7D2FE;
 
-  --severity-high: #F0883E;
-  --severity-high-bg: rgba(240, 136, 62, 0.12);
-  --severity-high-border: rgba(240, 136, 62, 0.3);
+  /* Accent: Teal */
+  --accent-teal: #0D9488;
+  --accent-teal-light: #F0FDFA;
 
-  --severity-medium: #E8C547;
-  --severity-medium-bg: rgba(232, 197, 71, 0.12);
-  --severity-medium-border: rgba(232, 197, 71, 0.3);
+  /* Status / Severity Palette */
+  --badge-critical-text: #DC2626;
+  --badge-critical-bg: #FEF2F2;
+  --badge-critical-border: #FEE2E2;
 
-  --severity-low: #5B8DEF;
-  --severity-low-bg: rgba(91, 141, 239, 0.12);
-  --severity-low-border: rgba(91, 141, 239, 0.3);
+  --badge-high-text: #EA580C;
+  --badge-high-bg: #FFF7ED;
+  --badge-high-border: #FFEDD5;
 
-  --severity-clean: #34C795;
-  --severity-clean-bg: rgba(52, 199, 149, 0.12);
-  --severity-clean-border: rgba(52, 199, 149, 0.3);
+  --badge-medium-text: #D97706;
+  --badge-medium-bg: #FFFBEB;
+  --badge-medium-border: #FEF3C7;
+
+  --badge-clean-text: #16A34A;
+  --badge-clean-bg: #F0FDF4;
+  --badge-clean-border: #DCFCE7;
+
+  --badge-blue-text: #0284C7;
+  --badge-blue-bg: #F0F9FF;
+  --badge-blue-border: #E0F2FE;
 }
 
 body {
   background-color: var(--bg-base);
   color: var(--text-primary);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  letter-spacing: -0.01em;
+  font-family: -apple-system, BlinkMacSystemFont, "Plus Jakarta Sans", "Inter", "Segoe UI", Roboto, sans-serif;
+  letter-spacing: -0.015em;
+  min-height: 100vh;
 }
 
-/* Monospace text for all identifiers, hashes, IPs, timestamps, and numbers */
-.font-mono, code, kbd, samp, pre {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+/* Crisp Clean White Cards with Soft Shadow */
+.clean-card {
+  background-color: #FFFFFF;
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02), 0 4px 12px 0 rgba(0, 0, 0, 0.03);
 }
 
-/* Sharp, flat SOC surfaces with hairline borders */
-.soc-card {
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
+.clean-card-nested {
+  background-color: #F8FAFC;
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
 }
 
-.soc-card-nested {
-  background-color: var(--bg-surface-2);
-  border: 1px solid var(--border-subtle);
-  border-radius: 6px;
+/* Subtle Hover Transitions */
+.card-hover {
+  transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.06);
+  border-color: #CBD5E1;
 }
 
 /* Custom Scrollbar */
@@ -67,23 +84,14 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-base);
+  background: #F8FAFC;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border);
+  background: #CBD5E1;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #2A3644;
-}
-
-/* Utility for quiet label hierarchy */
-.soc-label {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-muted);
+  background: #94A3B8;
 }

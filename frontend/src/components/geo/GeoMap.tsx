@@ -29,20 +29,20 @@ export default function GeoMap({ ips }: GeoMapProps) {
 
   if (!isMounted) {
     return (
-      <div className="h-72 w-full soc-card flex items-center justify-center text-xs text-[#7C8896] font-mono">
+      <div className="h-72 w-full clean-card flex items-center justify-center text-xs text-[#64748B] font-medium">
         Initializing Geolocation Matrix...
       </div>
     );
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {/* Attribution Standard Caveat Banner */}
-      <div className="soc-card p-3 text-xs flex items-start gap-2.5 bg-[#161D26] border-[#1F2933]">
-        <Info className="w-4 h-4 text-[#2DD4BF] flex-shrink-0 mt-0.5" strokeWidth={1.5} />
+      <div className="clean-card p-4 text-xs flex items-start gap-3 bg-[#F8FAFC]">
+        <Info className="w-4 h-4 text-[#4F46E5] flex-shrink-0 mt-0.5" />
         <div>
-          <span className="text-[#E6EBF0] font-semibold">Probabilistic Infrastructure Attribution Standard:</span>
-          <p className="text-[11px] text-[#7C8896] mt-0.5">
+          <span className="text-[#0F172A] font-bold">Probabilistic Infrastructure Attribution Standard:</span>
+          <p className="text-[11px] text-[#64748B] mt-0.5 leading-relaxed">
             Geographic coordinates denote probable BGP routing hubs, hosting facilities, and intermediate relay infrastructure. 
             TRACE-X does not claim confirmed physical residence of individual threat actors.
           </p>
@@ -50,26 +50,26 @@ export default function GeoMap({ ips }: GeoMapProps) {
       </div>
 
       {/* Map Display & IP Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Map Canvas */}
-        <div className="lg:col-span-2 h-80 soc-card flex flex-col justify-between p-3.5 relative overflow-hidden">
+        <div className="lg:col-span-2 h-88 clean-card flex flex-col justify-between p-4 relative overflow-hidden">
           <div className="flex items-center justify-between z-10">
-            <span className="text-xs font-semibold text-[#E6EBF0] flex items-center gap-1.5 font-mono">
-              <MapPin className="w-3.5 h-3.5 text-[#2DD4BF]" strokeWidth={1.5} />
-              <span>INFRASTRUCTURE PLOT</span>
+            <span className="text-xs font-bold text-[#0F172A] flex items-center gap-1.5">
+              <MapPin className="w-4 h-4 text-[#4F46E5]" />
+              <span>Infrastructure Plot Canvas</span>
             </span>
-            <span className="text-[10px] bg-[#161D26] px-2 py-0.5 rounded text-[#7C8896] font-mono">
+            <span className="text-xs font-bold bg-[#EEF2FF] text-[#4F46E5] px-2.5 py-0.5 rounded-full">
               {validIps.length} Nodes Mapped
             </span>
           </div>
 
           {/* Coordinates Grid */}
-          <div className="relative w-full h-56 rounded bg-[#0B0F14] border border-[#1F2933] p-3 overflow-hidden">
+          <div className="relative w-full h-64 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] p-3 overflow-hidden">
             {/* World grid background lines */}
             <div
-              className="absolute inset-0 opacity-20 pointer-events-none"
+              className="absolute inset-0 opacity-40 pointer-events-none"
               style={{
-                backgroundImage: "linear-gradient(to right, #1F2933 1px, transparent 1px), linear-gradient(to bottom, #1F2933 1px, transparent 1px)",
+                backgroundImage: "radial-gradient(#CBD5E1 1px, transparent 1px)",
                 backgroundSize: "24px 24px"
               }}
             ></div>
@@ -88,24 +88,24 @@ export default function GeoMap({ ips }: GeoMapProps) {
                   <div className="relative flex items-center justify-center">
                     <span
                       className={`animate-ping absolute inline-flex h-4 w-4 rounded-full opacity-60 ${
-                        isHighRisk ? "bg-[#E5484D]" : "bg-[#2DD4BF]"
+                        isHighRisk ? "bg-[#EF4444]" : "bg-[#4F46E5]"
                       }`}
                     ></span>
                     <span
-                      className={`relative inline-flex rounded-full h-2.5 w-2.5 ${
-                        isHighRisk ? "bg-[#E5484D]" : "bg-[#2DD4BF]"
-                      } border border-[#0B0F14]`}
+                      className={`relative inline-flex rounded-full h-3 w-3 ${
+                        isHighRisk ? "bg-[#EF4444]" : "bg-[#4F46E5]"
+                      } border-2 border-white shadow-sm`}
                     ></span>
                   </div>
 
                   {/* Tooltip */}
-                  <div className="hidden group-hover:block absolute bottom-4 left-1/2 -translate-x-1/2 bg-[#10161D] border border-[#1F2933] p-2.5 rounded text-[10px] text-[#E6EBF0] min-w-[180px] z-30 pointer-events-none shadow-lg">
-                    <div className="font-mono font-bold text-[#2DD4BF]">{ip.ip}</div>
-                    <div className="text-[#7C8896]">{ip.city}, {ip.country}</div>
-                    <div className="text-[9px] text-[#7C8896] mt-0.5 truncate">{ip.asn_org}</div>
-                    <div className="mt-1 pt-1 border-t border-[#1F2933] flex justify-between font-mono">
-                      <span className="text-[#7C8896]">Attribution:</span>
-                      <span className="text-[#E6EBF0] font-semibold">{ip.attribution_confidence || 75}%</span>
+                  <div className="hidden group-hover:block absolute bottom-5 left-1/2 -translate-x-1/2 bg-white border border-[#E2E8F0] p-3 rounded-xl text-xs text-[#0F172A] min-w-[200px] z-30 pointer-events-none shadow-xl">
+                    <div className="font-mono font-bold text-[#4F46E5]">{ip.ip}</div>
+                    <div className="text-[#64748B] text-[11px] mt-0.5">{ip.city}, {ip.country}</div>
+                    <div className="text-[10px] text-[#94A3B8] mt-0.5 truncate">{ip.asn_org}</div>
+                    <div className="mt-2 pt-1.5 border-t border-[#F1F5F9] flex justify-between font-semibold">
+                      <span className="text-[#64748B]">Confidence:</span>
+                      <span className="text-[#16A34A]">{ip.attribution_confidence || 75}%</span>
                     </div>
                   </div>
                 </div>
@@ -113,37 +113,37 @@ export default function GeoMap({ ips }: GeoMapProps) {
             })}
           </div>
 
-          <div className="text-[10px] text-[#7C8896] font-mono flex items-center justify-between">
+          <div className="text-[11px] text-[#64748B] flex items-center justify-between font-medium">
             <span>Projection: WGS84 Geodetic</span>
             <span>BGP Routing Matrix</span>
           </div>
         </div>
 
         {/* IP Nodes List */}
-        <div className="space-y-2 overflow-y-auto max-h-80">
+        <div className="space-y-2.5 overflow-y-auto max-h-88">
           {validIps.map((ip, idx) => (
-            <div key={idx} className="soc-card p-3 text-xs space-y-1">
+            <div key={idx} className="clean-card p-3.5 text-xs space-y-1">
               <div className="flex items-center justify-between">
-                <span className="font-mono font-semibold text-[#E6EBF0]">{ip.ip}</span>
+                <span className="font-mono font-bold text-[#0F172A]">{ip.ip}</span>
                 <span
-                  className={`text-[9px] font-mono font-semibold px-1.5 py-0.2 rounded ${
+                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                     (ip.risk_score || 0) > 70
-                      ? "bg-[rgba(229,72,77,0.12)] text-[#E5484D]"
-                      : "bg-[#161D26] text-[#7C8896]"
+                      ? "bg-[#FEF2F2] text-[#EF4444]"
+                      : "bg-[#F0FDF4] text-[#16A34A]"
                   }`}
                 >
                   {(ip.risk_score || 0) > 70 ? "HIGH RISK" : "ROUTING"}
                 </span>
               </div>
-              <div className="text-[#7C8896] text-[11px]">
+              <div className="text-[#64748B] text-xs">
                 {ip.city ? `${ip.city}, ` : ""}{ip.country || "Unknown"}
               </div>
-              <div className="text-[10px] text-[#7C8896] font-mono truncate">
+              <div className="text-[11px] text-[#94A3B8] font-mono truncate">
                 {ip.asn} • {ip.asn_org}
               </div>
-              <div className="pt-1.5 border-t border-[#1F2933] flex items-center justify-between text-[10px] font-mono">
-                <span className="text-[#7C8896]">Attribution Conf:</span>
-                <span className="font-semibold text-[#E6EBF0]">{ip.attribution_confidence || 75}%</span>
+              <div className="pt-2 border-t border-[#F1F5F9] flex items-center justify-between text-[11px]">
+                <span className="text-[#64748B]">Attribution Confidence:</span>
+                <span className="font-bold text-[#0F172A]">{ip.attribution_confidence || 75}%</span>
               </div>
             </div>
           ))}

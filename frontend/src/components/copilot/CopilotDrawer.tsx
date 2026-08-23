@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { MessageSquareCode, X, Send, Bot, User } from "lucide-react";
+import { X, Send, Bot, Sparkles } from "lucide-react";
 import { queryCopilot } from "@/lib/api";
 
 interface CopilotDrawerProps {
@@ -15,8 +15,8 @@ export default function CopilotDrawer({ emailId, caseId }: CopilotDrawerProps) {
   const [messages, setMessages] = useState<Array<{ sender: "user" | "copilot"; text: string; sources?: string[]; mitre?: string[] }>>([
     {
       sender: "copilot",
-      text: "I am your TRACE-X Forensic Copilot. I am scoped strictly to the current case's extracted evidence, hop relays, and IOC telemetry.",
-      sources: ["Telemetry Index"]
+      text: "Hello! I am your TRACE-X Forensic Copilot. I can analyze suspicious headers, decode obfuscated links, and query threat intelligence on demand.",
+      sources: ["Telemetry Database"]
     }
   ]);
   const [isLoading, setIsLoading] = useState(false);
@@ -67,56 +67,60 @@ export default function CopilotDrawer({ emailId, caseId }: CopilotDrawerProps) {
   };
 
   return (
-    <div className="fixed bottom-5 right-5 z-50">
-      {/* Trigger Button */}
+    <div className="fixed bottom-6 right-6 z-50">
+      {/* Floating Trigger Button */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="flex items-center gap-2 bg-[#161D26] hover:bg-[#1F2933] border border-[#1F2933] text-[#E6EBF0] px-3.5 py-2 rounded-md text-xs font-medium shadow-md transition-colors cursor-pointer"
+          className="flex items-center gap-2.5 bg-[#4F46E5] hover:bg-[#4338CA] text-white px-4 py-3 rounded-2xl font-bold text-xs shadow-xl shadow-indigo-200 transition-all hover:scale-105 cursor-pointer active:scale-95"
         >
-          <Bot className="w-4 h-4 text-[#2DD4BF]" strokeWidth={1.5} />
-          <span>AI Copilot</span>
-          <span className="w-1.5 h-1.5 rounded-full bg-[#34C795]"></span>
+          <div className="w-6 h-6 rounded-lg bg-white/20 flex items-center justify-center">
+            <Bot className="w-4 h-4 text-white" />
+          </div>
+          <span>AI Forensic Copilot</span>
+          <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse"></span>
         </button>
       )}
 
       {/* Floating Chat Box */}
       {isOpen && (
-        <div className="w-96 sm:w-[420px] h-[520px] soc-card shadow-2xl flex flex-col overflow-hidden">
+        <div className="w-96 sm:w-[420px] h-[540px] bg-white border border-[#E2E8F0] rounded-3xl shadow-2xl flex flex-col overflow-hidden">
           {/* Header */}
-          <div className="px-4 py-3 bg-[#0B0F14] border-b border-[#1F2933] flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Bot className="w-4 h-4 text-[#2DD4BF]" strokeWidth={1.5} />
+          <div className="px-5 py-4 bg-[#F8FAFC] border-b border-[#E2E8F0] flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-[#EEF2FF] flex items-center justify-center text-[#4F46E5]">
+                <Bot className="w-5 h-5" />
+              </div>
               <div>
-                <div className="text-xs font-semibold text-[#E6EBF0]">TRACE-X Copilot</div>
-                <div className="text-[10px] text-[#7C8896]">Evidence-Grounded Investigation Q&A</div>
+                <div className="text-xs font-bold text-[#0F172A]">TRACE-X Copilot</div>
+                <div className="text-[11px] text-[#64748B]">Evidence-Grounded Forensic AI</div>
               </div>
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="text-[#7C8896] hover:text-[#E6EBF0] p-1 rounded cursor-pointer"
+              className="text-[#94A3B8] hover:text-[#0F172A] p-1.5 rounded-lg hover:bg-white transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
 
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-3.5 space-y-3 text-xs">
+          {/* Messages Feed */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-3 text-xs bg-[#F8FAFC]">
             {messages.map((m, idx) => (
               <div
                 key={idx}
                 className={`flex gap-2 ${m.sender === "user" ? "justify-end" : "justify-start"}`}
               >
                 <div
-                  className={`max-w-[85%] rounded-md p-2.5 leading-relaxed ${
+                  className={`max-w-[85%] rounded-2xl p-3 leading-relaxed shadow-sm ${
                     m.sender === "user"
-                      ? "bg-[#2DD4BF] text-[#0B0F14] font-medium"
-                      : "bg-[#0B0F14] border border-[#1F2933] text-[#E6EBF0]"
+                      ? "bg-[#4F46E5] text-white font-medium"
+                      : "bg-white border border-[#E2E8F0] text-[#0F172A]"
                   }`}
                 >
                   <div className="whitespace-pre-line">{m.text}</div>
                   {m.sources && m.sources.length > 0 && (
-                    <div className="mt-2 pt-1.5 border-t border-[#1F2933] text-[10px] text-[#7C8896] font-mono">
+                    <div className="mt-2 pt-1.5 border-t border-[#E2E8F0] text-[10px] text-[#64748B]">
                       Sources: {m.sources.join(" • ")}
                     </div>
                   )}
@@ -124,21 +128,21 @@ export default function CopilotDrawer({ emailId, caseId }: CopilotDrawerProps) {
               </div>
             ))}
             {isLoading && (
-              <div className="text-xs text-[#7C8896] font-mono flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#2DD4BF] animate-pulse"></span>
-                <span>Evaluating telemetry...</span>
+              <div className="text-xs text-[#4F46E5] flex items-center gap-2 p-2 bg-white rounded-xl border border-[#E2E8F0] w-fit shadow-sm">
+                <span className="w-2 h-2 rounded-full bg-[#4F46E5] animate-pulse"></span>
+                <span>Evaluating forensics...</span>
               </div>
             )}
           </div>
 
-          {/* Prompt Chips */}
-          <div className="px-3 py-2 bg-[#0B0F14] border-t border-[#1F2933] overflow-x-auto flex gap-1.5 no-scrollbar">
+          {/* Prompt Suggestions */}
+          <div className="px-4 py-2 bg-white border-t border-[#E2E8F0] overflow-x-auto flex gap-1.5 no-scrollbar">
             {SUGGESTIONS.map((s, idx) => (
               <button
                 key={idx}
                 onClick={() => handleSend(s)}
                 disabled={isLoading}
-                className="whitespace-nowrap text-[10px] px-2 py-1 rounded bg-[#161D26] hover:bg-[#1F2933] text-[#7C8896] hover:text-[#E6EBF0] transition-colors flex-shrink-0 cursor-pointer"
+                className="whitespace-nowrap text-[11px] font-medium px-2.5 py-1 rounded-full bg-[#F1F5F9] hover:bg-[#EEF2FF] text-[#475569] hover:text-[#4F46E5] transition-colors flex-shrink-0 cursor-pointer"
               >
                 {s}
               </button>
@@ -146,21 +150,21 @@ export default function CopilotDrawer({ emailId, caseId }: CopilotDrawerProps) {
           </div>
 
           {/* Input Bar */}
-          <div className="p-3 bg-[#0B0F14] border-t border-[#1F2933] flex gap-2">
+          <div className="p-3.5 bg-white border-t border-[#E2E8F0] flex gap-2">
             <input
               type="text"
               placeholder="Ask about this case's evidence..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSend()}
-              className="flex-1 bg-[#10161D] border border-[#1F2933] rounded-md px-3 py-1.5 text-xs text-[#E6EBF0] placeholder-[#7C8896] focus:outline-none focus:border-[#2DD4BF]"
+              className="flex-1 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-3.5 py-2 text-xs text-[#0F172A] placeholder-[#94A3B8] focus:outline-none focus:border-[#4F46E5] focus:bg-white transition-colors"
             />
             <button
               onClick={() => handleSend()}
               disabled={isLoading || !input.trim()}
-              className="bg-[#2DD4BF] hover:bg-[#14B8A6] disabled:opacity-40 text-[#0B0F14] px-3 py-1.5 rounded-md font-semibold text-xs transition-colors cursor-pointer"
+              className="bg-[#4F46E5] hover:bg-[#4338CA] disabled:opacity-40 text-white px-3.5 py-2 rounded-xl font-bold text-xs transition-colors cursor-pointer flex items-center justify-center shadow-sm"
             >
-              <Send className="w-3.5 h-3.5" />
+              <Send className="w-4 h-4" />
             </button>
           </div>
         </div>

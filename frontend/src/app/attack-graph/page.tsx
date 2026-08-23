@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Network } from "lucide-react";
 import { getGlobalGraph } from "@/lib/api";
 import AttackGraphView from "@/components/graph/AttackGraphView";
 
@@ -17,13 +16,13 @@ export default function AttackGraphPage() {
   }, []);
 
   return (
-    <div className="space-y-4">
-      <div className="border-b border-[#1F2933] pb-4">
-        <h1 className="text-xl font-semibold text-[#E6EBF0] tracking-tight">
-          Multi-Entity Threat Attack Graph
+    <div className="space-y-6 max-w-[1600px] mx-auto pb-12">
+      <div>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-[#0F172A]">
+          Attack Graph Matrix
         </h1>
-        <p className="text-xs text-[#7C8896] mt-0.5">
-          Consolidated entity-relationship matrix linking emails, domains, IPs, ASNs, and campaign clusters.
+        <p className="text-xs md:text-sm text-[#64748B] mt-1">
+          Interactive entity-relationship graph connecting emails, lookalike domains, IPs, and campaign nodes
         </p>
       </div>
 

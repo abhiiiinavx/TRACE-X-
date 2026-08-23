@@ -1,23 +1,19 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import Sidebar from "@/components/layout/Sidebar";
 import Navbar from "@/components/layout/Navbar";
 import CopilotDrawer from "@/components/copilot/CopilotDrawer";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-jakarta",
 });
 
 export const metadata: Metadata = {
-  title: "TRACE-X — AI-Powered Email Threat Detection, Geolocation & Forensic Platform",
-  description: "Production-quality cyber-forensics platform with hop relay reconstruction, domain typosquatting detection, campaign DNA clustering, and explainable AI scoring.",
+  title: "TRACE-X — AI-Powered Email Security & Cyber-Forensics Platform",
+  description: "Next-generation email security, hop relay forensics, domain spoofing analysis and AI incident response.",
 };
 
 export default function RootLayout({
@@ -26,20 +22,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}>
-      <body className="min-h-full flex bg-[#060913] text-slate-200 antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
-        {/* Left SOC Navigation Sidebar */}
+    <html lang="en" className={`${jakarta.variable} h-full antialiased`}>
+      <body className="min-h-full flex bg-[#F8FAFC] text-[#0F172A] font-sans antialiased">
+        {/* Left Navigation Sidebar */}
         <Sidebar />
 
-        {/* Main Content Pane */}
-        <div className="flex-1 flex flex-col min-w-0">
+        {/* Main Content Viewport */}
+        <div className="flex-1 flex flex-col min-w-0 min-h-screen">
           <Navbar />
-          <main className="flex-1 p-6 overflow-y-auto">
+          <main className="flex-1 p-6 md:p-8 overflow-y-auto">
             {children}
           </main>
         </div>
 
-        {/* Universal Floating AI Forensic Copilot */}
+        {/* Floating AI Forensic Copilot */}
         <CopilotDrawer />
       </body>
     </html>

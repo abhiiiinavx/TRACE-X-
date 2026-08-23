@@ -22,14 +22,14 @@ export default function ForensicReportsPage() {
   }, []);
 
   return (
-    <div className="space-y-5">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#1F2933] pb-4">
+    <div className="space-y-6 max-w-[1600px] mx-auto pb-12">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold text-[#E6EBF0] tracking-tight">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-[#0F172A]">
             Forensic Incident Reports
           </h1>
-          <p className="text-xs text-[#7C8896] mt-0.5">
-            Generate and export courtroom-ready, executive forensic PDF reports with MITRE ATT&CK alignment.
+          <p className="text-xs md:text-sm text-[#64748B] mt-1">
+            Generate and export courtroom-ready, executive forensic PDF reports with MITRE ATT&CK alignment
           </p>
         </div>
 
@@ -38,49 +38,49 @@ export default function ForensicReportsPage() {
             href={getReportHtmlUrl(selectedEmailId)}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#0B0F14] px-3.5 py-1.5 rounded-md text-xs font-semibold transition-colors"
+            className="flex items-center gap-2 bg-[#4F46E5] hover:bg-[#4338CA] text-white px-4 py-2 rounded-xl text-xs font-bold shadow-sm transition-all self-start sm:self-auto"
           >
-            <Printer className="w-3.5 h-3.5" />
-            <span>Print Report</span>
-            <ExternalLink className="w-3 h-3" />
+            <Printer className="w-4 h-4" />
+            <span>Print Forensic Report</span>
+            <ExternalLink className="w-3.5 h-3.5" />
           </a>
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Incident List */}
-        <div className="space-y-2">
-          <div className="soc-label">Select Incident</div>
+        <div className="space-y-3">
+          <h3 className="text-xs font-bold text-[#64748B] uppercase tracking-wider">Select Incident</h3>
           {emails.map((e) => {
             const isSelected = selectedEmailId === e.id;
             return (
               <div
                 key={e.id}
                 onClick={() => setSelectedEmailId(e.id)}
-                className={`soc-card p-3 cursor-pointer transition-colors ${
+                className={`clean-card p-4 cursor-pointer transition-all card-hover ${
                   isSelected
-                    ? "border-[#2DD4BF] bg-[#161D26]"
-                    : "hover:border-[#7C8896]"
+                    ? "border-[#4F46E5] ring-2 ring-[#EEF2FF] bg-white shadow-md shadow-indigo-50"
+                    : "hover:border-[#CBD5E1]"
                 }`}
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] font-mono text-[#2DD4BF]">
+                  <span className="text-xs font-bold text-[#4F46E5]">
                     {e.classification}
                   </span>
                   <span
-                    className={`text-[9px] font-mono font-semibold px-1.5 py-0.2 rounded uppercase ${
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
                       e.severity === "CRITICAL"
-                        ? "bg-[rgba(229,72,77,0.12)] text-[#E5484D]"
+                        ? "bg-[#FEF2F2] text-[#EF4444]"
                         : e.severity === "HIGH"
-                        ? "bg-[rgba(240,136,62,0.12)] text-[#F0883E]"
-                        : "bg-[rgba(52,199,149,0.12)] text-[#34C795]"
+                        ? "bg-[#FFF7ED] text-[#EA580C]"
+                        : "bg-[#F0FDF4] text-[#16A34A]"
                     }`}
                   >
                     {e.severity}
                   </span>
                 </div>
-                <div className="text-xs font-semibold text-[#E6EBF0] line-clamp-1">{e.subject}</div>
-                <div className="text-[10px] text-[#7C8896] font-mono mt-1">From: {e.from_addr}</div>
+                <div className="text-xs font-bold text-[#0F172A] line-clamp-1">{e.subject}</div>
+                <div className="text-[11px] text-[#64748B] font-mono mt-1 truncate">From: {e.from_addr}</div>
               </div>
             );
           })}
@@ -89,10 +89,10 @@ export default function ForensicReportsPage() {
         {/* Preview Frame */}
         <div className="lg:col-span-2">
           {selectedEmailId ? (
-            <div className="soc-card overflow-hidden flex flex-col h-[650px]">
-              <div className="p-2.5 bg-[#0B0F14] border-b border-[#1F2933] flex items-center justify-between text-xs font-mono">
-                <span className="text-[#E6EBF0]">Report Preview</span>
-                <span className="text-[10px] text-[#7C8896]">A4 Print Template</span>
+            <div className="clean-card overflow-hidden flex flex-col h-[700px] shadow-md">
+              <div className="p-3.5 bg-[#F8FAFC] border-b border-[#E2E8F0] flex items-center justify-between text-xs">
+                <span className="font-bold text-[#0F172A]">Report Live Preview</span>
+                <span className="text-[11px] text-[#64748B] font-medium">A4 Formatted Template</span>
               </div>
               <iframe
                 src={getReportHtmlUrl(selectedEmailId)}
@@ -101,8 +101,8 @@ export default function ForensicReportsPage() {
               />
             </div>
           ) : (
-            <div className="soc-card p-12 text-center text-[#7C8896] text-xs font-mono">
-              Select an incident from the left to view its forensic report.
+            <div className="clean-card p-12 text-center text-[#64748B] text-xs">
+              Select an incident from the left to preview its forensic report.
             </div>
           )}
         </div>
