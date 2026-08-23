@@ -1,18 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  MessageSquareCode,
-  X,
-  Send,
-  Sparkles,
-  ShieldAlert,
-  HelpCircle,
-  FileCheck2,
-  Bot,
-  User,
-  ChevronUp
-} from "lucide-react";
+import { MessageSquareCode, X, Send, Bot, User } from "lucide-react";
 import { queryCopilot } from "@/lib/api";
 
 interface CopilotDrawerProps {
@@ -26,17 +15,16 @@ export default function CopilotDrawer({ emailId, caseId }: CopilotDrawerProps) {
   const [messages, setMessages] = useState<Array<{ sender: "user" | "copilot"; text: string; sources?: string[]; mitre?: string[] }>>([
     {
       sender: "copilot",
-      text: "👋 I am your **TRACE-X Forensic Copilot**. I am scoped strictly to the current case's extracted evidence, hop relays, and IOC telemetry. Ask me anything about this attack.",
-      sources: ["Case Telemetry Index"]
+      text: "I am your TRACE-X Forensic Copilot. I am scoped strictly to the current case's extracted evidence, hop relays, and IOC telemetry.",
+      sources: ["Telemetry Index"]
     }
   ]);
   const [isLoading, setIsLoading] = useState(false);
 
   const SUGGESTIONS = [
     "What makes this email suspicious?",
-    "Show all infrastructure related to this attack",
-    "Which campaign does this belong to?",
-    "What should I investigate next?",
+    "Show infrastructure related to this attack",
+    "Which campaign cluster does this belong to?",
     "Generate executive forensic summary"
   ];
 
@@ -70,7 +58,7 @@ export default function CopilotDrawer({ emailId, caseId }: CopilotDrawerProps) {
         ...prev,
         {
           sender: "copilot",
-          text: `⚠️ **Forensic Service Notice**: Unable to complete query: ${err.message || "Connection error"}.`
+          text: `Unable to complete query: ${err.message || "Connection error"}.`
         }
       ]);
     } finally {
@@ -79,96 +67,78 @@ export default function CopilotDrawer({ emailId, caseId }: CopilotDrawerProps) {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
-      {/* Trigger Button when closed */}
+    <div className="fixed bottom-5 right-5 z-50">
+      {/* Trigger Button */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="flex items-center gap-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 px-4 py-3 rounded-full font-bold text-xs shadow-xl shadow-cyan-500/30 transition-all transform hover:scale-105 active:scale-95 cursor-pointer"
+          className="flex items-center gap-2 bg-[#161D26] hover:bg-[#1F2933] border border-[#1F2933] text-[#E6EBF0] px-3.5 py-2 rounded-md text-xs font-medium shadow-md transition-colors cursor-pointer"
         >
-          <Bot className="w-5 h-5" />
-          <span>AI Forensic Copilot</span>
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+          <Bot className="w-4 h-4 text-[#2DD4BF]" strokeWidth={1.5} />
+          <span>AI Copilot</span>
+          <span className="w-1.5 h-1.5 rounded-full bg-[#34C795]"></span>
         </button>
       )}
 
-      {/* Floating Chat Drawer */}
+      {/* Floating Chat Box */}
       {isOpen && (
-        <div className="w-96 sm:w-[440px] h-[580px] bg-[#0c1222]/95 backdrop-blur-xl border border-cyan-500/30 rounded-2xl shadow-2xl shadow-black/80 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200">
+        <div className="w-96 sm:w-[420px] h-[520px] soc-card shadow-2xl flex flex-col overflow-hidden">
           {/* Header */}
-          <div className="px-4 py-3.5 bg-[#080d1a] border-b border-slate-800 flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-cyan-950 border border-cyan-500/40 flex items-center justify-center text-cyan-400">
-                <Sparkles className="w-4 h-4" />
-              </div>
+          <div className="px-4 py-3 bg-[#0B0F14] border-b border-[#1F2933] flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Bot className="w-4 h-4 text-[#2DD4BF]" strokeWidth={1.5} />
               <div>
-                <div className="text-xs font-extrabold text-white flex items-center gap-2">
-                  <span>TRACE-X Copilot</span>
-                  <span className="text-[9px] bg-cyan-500/20 text-cyan-300 px-1.5 py-0.2 rounded font-mono border border-cyan-500/30">
-                    Grounded AI
-                  </span>
-                </div>
-                <div className="text-[10px] text-slate-400">Evidence-Backed Investigation Q&A</div>
+                <div className="text-xs font-semibold text-[#E6EBF0]">TRACE-X Copilot</div>
+                <div className="text-[10px] text-[#7C8896]">Evidence-Grounded Investigation Q&A</div>
               </div>
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="text-slate-400 hover:text-white p-1 rounded-md hover:bg-slate-800 transition-all cursor-pointer"
+              className="text-[#7C8896] hover:text-[#E6EBF0] p-1 rounded cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
 
-          {/* Messages Feed */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3 text-xs">
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-3.5 space-y-3 text-xs">
             {messages.map((m, idx) => (
               <div
                 key={idx}
-                className={`flex gap-2.5 ${m.sender === "user" ? "justify-end" : "justify-start"}`}
+                className={`flex gap-2 ${m.sender === "user" ? "justify-end" : "justify-start"}`}
               >
-                {m.sender === "copilot" && (
-                  <div className="w-6 h-6 rounded-md bg-cyan-950 border border-cyan-500/30 flex-shrink-0 flex items-center justify-center text-cyan-400">
-                    <Bot className="w-3.5 h-3.5" />
-                  </div>
-                )}
                 <div
-                  className={`max-w-[85%] rounded-xl p-3 leading-relaxed ${
+                  className={`max-w-[85%] rounded-md p-2.5 leading-relaxed ${
                     m.sender === "user"
-                      ? "bg-cyan-600 text-slate-950 font-semibold"
-                      : "bg-[#111a30] border border-slate-800 text-slate-200"
+                      ? "bg-[#2DD4BF] text-[#0B0F14] font-medium"
+                      : "bg-[#0B0F14] border border-[#1F2933] text-[#E6EBF0]"
                   }`}
                 >
                   <div className="whitespace-pre-line">{m.text}</div>
                   {m.sources && m.sources.length > 0 && (
-                    <div className="mt-2.5 pt-2 border-t border-slate-800/80 text-[10px] text-slate-400">
-                      <span className="font-semibold text-cyan-400">Telemetry Sources: </span>
-                      {m.sources.join(" • ")}
+                    <div className="mt-2 pt-1.5 border-t border-[#1F2933] text-[10px] text-[#7C8896] font-mono">
+                      Sources: {m.sources.join(" • ")}
                     </div>
                   )}
                 </div>
-                {m.sender === "user" && (
-                  <div className="w-6 h-6 rounded-md bg-slate-800 flex-shrink-0 flex items-center justify-center text-slate-300">
-                    <User className="w-3.5 h-3.5" />
-                  </div>
-                )}
               </div>
             ))}
             {isLoading && (
-              <div className="flex gap-2.5 items-center text-xs text-cyan-400 font-mono">
-                <Bot className="w-4 h-4 animate-spin" />
-                <span>Evaluating case telemetry & evidence graph...</span>
+              <div className="text-xs text-[#7C8896] font-mono flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#2DD4BF] animate-pulse"></span>
+                <span>Evaluating telemetry...</span>
               </div>
             )}
           </div>
 
-          {/* Quick Suggested Chips */}
-          <div className="px-3 py-2 bg-[#080d1a]/80 border-t border-slate-800/80 overflow-x-auto flex gap-1.5 no-scrollbar">
+          {/* Prompt Chips */}
+          <div className="px-3 py-2 bg-[#0B0F14] border-t border-[#1F2933] overflow-x-auto flex gap-1.5 no-scrollbar">
             {SUGGESTIONS.map((s, idx) => (
               <button
                 key={idx}
                 onClick={() => handleSend(s)}
                 disabled={isLoading}
-                className="whitespace-nowrap text-[10px] px-2.5 py-1 rounded-md bg-[#111a30] hover:bg-cyan-950 hover:text-cyan-300 border border-slate-800 hover:border-cyan-500/40 text-slate-300 transition-all flex-shrink-0 cursor-pointer"
+                className="whitespace-nowrap text-[10px] px-2 py-1 rounded bg-[#161D26] hover:bg-[#1F2933] text-[#7C8896] hover:text-[#E6EBF0] transition-colors flex-shrink-0 cursor-pointer"
               >
                 {s}
               </button>
@@ -176,21 +146,21 @@ export default function CopilotDrawer({ emailId, caseId }: CopilotDrawerProps) {
           </div>
 
           {/* Input Bar */}
-          <div className="p-3 bg-[#080d1a] border-t border-slate-800 flex gap-2">
+          <div className="p-3 bg-[#0B0F14] border-t border-[#1F2933] flex gap-2">
             <input
               type="text"
-              placeholder="Ask copilot about this case's evidence..."
+              placeholder="Ask about this case's evidence..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSend()}
-              className="flex-1 bg-[#111a30] border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500/60"
+              className="flex-1 bg-[#10161D] border border-[#1F2933] rounded-md px-3 py-1.5 text-xs text-[#E6EBF0] placeholder-[#7C8896] focus:outline-none focus:border-[#2DD4BF]"
             />
             <button
               onClick={() => handleSend()}
               disabled={isLoading || !input.trim()}
-              className="bg-cyan-500 hover:bg-cyan-400 disabled:opacity-40 text-slate-950 px-3 py-2 rounded-lg font-bold transition-all cursor-pointer"
+              className="bg-[#2DD4BF] hover:bg-[#14B8A6] disabled:opacity-40 text-[#0B0F14] px-3 py-1.5 rounded-md font-semibold text-xs transition-colors cursor-pointer"
             >
-              <Send className="w-4 h-4" />
+              <Send className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>

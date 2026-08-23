@@ -1,17 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  FileText,
-  Printer,
-  ExternalLink,
-  Shield,
-  Download,
-  CheckCircle2,
-  Calendar,
-  User,
-  ArrowRight
-} from "lucide-react";
+import { FileText, Printer, ExternalLink } from "lucide-react";
 import { listEmails, getReportHtmlUrl } from "@/lib/api";
 
 export default function ForensicReportsPage() {
@@ -32,15 +22,14 @@ export default function ForensicReportsPage() {
   }, []);
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <div className="space-y-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#1F2933] pb-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
-            <FileText className="w-6 h-6 text-cyan-400" />
-            <span>Forensic Incident Reports</span>
+          <h1 className="text-xl font-semibold text-[#E6EBF0] tracking-tight">
+            Forensic Incident Reports
           </h1>
-          <p className="text-xs text-slate-400">
-            Generate and export courtroom-ready, executive forensic PDF reports with MITRE ATT&CK alignment
+          <p className="text-xs text-[#7C8896] mt-0.5">
+            Generate and export courtroom-ready, executive forensic PDF reports with MITRE ATT&CK alignment.
           </p>
         </div>
 
@@ -49,73 +38,71 @@ export default function ForensicReportsPage() {
             href={getReportHtmlUrl(selectedEmailId)}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-md shadow-cyan-500/20"
+            className="flex items-center gap-1.5 bg-[#2DD4BF] hover:bg-[#14B8A6] text-[#0B0F14] px-3.5 py-1.5 rounded-md text-xs font-semibold transition-colors"
           >
-            <Printer className="w-4 h-4" />
-            <span>Print / Save Selected Report as PDF</span>
-            <ExternalLink className="w-3.5 h-3.5" />
+            <Printer className="w-3.5 h-3.5" />
+            <span>Print Report</span>
+            <ExternalLink className="w-3 h-3" />
           </a>
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Incident Selector List */}
-        <div className="space-y-3">
-          <div className="text-xs font-mono font-bold text-slate-400 uppercase">
-            Select Case Telemetry
-          </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Incident List */}
+        <div className="space-y-2">
+          <div className="soc-label">Select Incident</div>
           {emails.map((e) => {
             const isSelected = selectedEmailId === e.id;
             return (
               <div
                 key={e.id}
                 onClick={() => setSelectedEmailId(e.id)}
-                className={`cyber-card p-4 rounded-xl border cursor-pointer transition-all ${
+                className={`soc-card p-3 cursor-pointer transition-colors ${
                   isSelected
-                    ? "border-cyan-500/80 bg-cyan-950/20 shadow-md shadow-cyan-500/10"
-                    : "border-slate-800 hover:border-slate-700"
+                    ? "border-[#2DD4BF] bg-[#161D26]"
+                    : "hover:border-[#7C8896]"
                 }`}
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] font-mono text-cyan-400 font-bold">
+                  <span className="text-[10px] font-mono text-[#2DD4BF]">
                     {e.classification}
                   </span>
                   <span
-                    className={`text-[9px] font-bold px-1.5 py-0.2 rounded uppercase ${
+                    className={`text-[9px] font-mono font-semibold px-1.5 py-0.2 rounded uppercase ${
                       e.severity === "CRITICAL"
-                        ? "bg-red-950 text-red-400 border border-red-500/30"
+                        ? "bg-[rgba(229,72,77,0.12)] text-[#E5484D]"
                         : e.severity === "HIGH"
-                        ? "bg-orange-950 text-orange-400 border border-orange-500/30"
-                        : "bg-emerald-950 text-emerald-400 border border-emerald-500/30"
+                        ? "bg-[rgba(240,136,62,0.12)] text-[#F0883E]"
+                        : "bg-[rgba(52,199,149,0.12)] text-[#34C795]"
                     }`}
                   >
                     {e.severity}
                   </span>
                 </div>
-                <div className="text-xs font-bold text-white line-clamp-1">{e.subject}</div>
-                <div className="text-[10px] text-slate-400 font-mono mt-1">From: {e.from_addr}</div>
+                <div className="text-xs font-semibold text-[#E6EBF0] line-clamp-1">{e.subject}</div>
+                <div className="text-[10px] text-[#7C8896] font-mono mt-1">From: {e.from_addr}</div>
               </div>
             );
           })}
         </div>
 
-        {/* Live Printable Report Preview Frame */}
+        {/* Preview Frame */}
         <div className="lg:col-span-2">
           {selectedEmailId ? (
-            <div className="cyber-card rounded-2xl overflow-hidden border border-slate-800 flex flex-col h-[700px]">
-              <div className="p-3 bg-[#080d1a] border-b border-slate-800 flex items-center justify-between text-xs">
-                <span className="font-mono text-cyan-400 font-bold">Report Preview Frame</span>
-                <span className="text-[10px] text-slate-400 font-mono">A4 Print Standard</span>
+            <div className="soc-card overflow-hidden flex flex-col h-[650px]">
+              <div className="p-2.5 bg-[#0B0F14] border-b border-[#1F2933] flex items-center justify-between text-xs font-mono">
+                <span className="text-[#E6EBF0]">Report Preview</span>
+                <span className="text-[10px] text-[#7C8896]">A4 Print Template</span>
               </div>
               <iframe
                 src={getReportHtmlUrl(selectedEmailId)}
                 className="w-full flex-1 bg-white border-0"
-                title="Forensic Incident Report"
+                title="Forensic Report"
               />
             </div>
           ) : (
-            <div className="cyber-card p-12 rounded-2xl border border-slate-800 text-center text-slate-400 text-xs font-mono">
-              Select an email from the left to view and export its forensic report.
+            <div className="soc-card p-12 text-center text-[#7C8896] text-xs font-mono">
+              Select an incident from the left to view its forensic report.
             </div>
           )}
         </div>

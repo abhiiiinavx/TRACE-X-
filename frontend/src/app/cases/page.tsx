@@ -2,18 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import {
-  FolderGit2,
-  Lock,
-  CheckCircle2,
-  Clock,
-  AlertTriangle,
-  ArrowRight,
-  Shield,
-  FileText,
-  User,
-  Plus
-} from "lucide-react";
+import { FolderGit2, ArrowRight, User } from "lucide-react";
 import { listCases, getCaseDetail, updateCaseStatus, toggleCaseAction } from "@/lib/api";
 
 export default function ForensicCasesPage() {
@@ -72,28 +61,27 @@ export default function ForensicCasesPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <div className="space-y-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#1F2933] pb-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
-            <FolderGit2 className="w-6 h-6 text-cyan-400" />
-            <span>Forensic Case Management & Evidence Vault</span>
+          <h1 className="text-xl font-semibold text-[#E6EBF0] tracking-tight">
+            Forensic Case Management
           </h1>
-          <p className="text-xs text-slate-400">
-            Immutable chain-of-custody tracking, investigation status workflows, and containment action items
+          <p className="text-xs text-[#7C8896] mt-0.5">
+            Chain-of-custody tracking, investigation status workflows, and mitigation containment actions.
           </p>
         </div>
 
         {/* Status Filters */}
-        <div className="flex items-center gap-1 bg-[#080d1a] p-1 rounded-lg border border-slate-800 text-[11px]">
+        <div className="flex items-center gap-1 bg-[#0B0F14] p-1 rounded border border-[#1F2933] text-[11px] font-mono">
           {["ALL", "Investigating", "Open", "Contained", "Resolved"].map((st) => (
             <button
               key={st}
               onClick={() => setStatusFilter(st)}
-              className={`px-3 py-1 rounded font-bold transition-all cursor-pointer ${
+              className={`px-2.5 py-1 rounded transition-colors cursor-pointer ${
                 statusFilter === st
-                  ? "bg-cyan-500 text-slate-950"
-                  : "text-slate-400 hover:text-slate-200"
+                  ? "bg-[#161D26] text-[#2DD4BF] font-semibold"
+                  : "text-[#7C8896] hover:text-[#E6EBF0]"
               }`}
             >
               {st}
@@ -102,44 +90,44 @@ export default function ForensicCasesPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Left Cases List */}
-        <div className="space-y-3">
+        <div className="space-y-2">
           {cases.map((c) => {
             const isSelected = selectedCase?.case?.id === c.id;
             return (
               <div
                 key={c.id}
                 onClick={() => handleSelectCase(c.id)}
-                className={`cyber-card p-4 rounded-xl border cursor-pointer transition-all ${
+                className={`soc-card p-3.5 cursor-pointer transition-colors ${
                   isSelected
-                    ? "border-cyan-500/80 bg-cyan-950/20 shadow-md shadow-cyan-500/10"
-                    : "border-slate-800 hover:border-slate-700"
+                    ? "border-[#2DD4BF] bg-[#161D26]"
+                    : "hover:border-[#7C8896]"
                 }`}
               >
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="font-mono text-[10px] font-bold text-cyan-300 bg-cyan-950 px-2 py-0.5 rounded border border-cyan-500/30">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-mono text-[10px] text-[#2DD4BF]">
                     {c.case_number}
                   </span>
                   <span
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${
+                    className={`text-[9px] font-mono font-semibold px-1.5 py-0.2 rounded uppercase ${
                       c.severity === "CRITICAL"
-                        ? "bg-red-950 text-red-400 border border-red-500/30"
+                        ? "bg-[rgba(229,72,77,0.12)] text-[#E5484D]"
                         : c.severity === "HIGH"
-                        ? "bg-orange-950 text-orange-400 border border-orange-500/30"
-                        : "bg-emerald-950 text-emerald-400 border border-emerald-500/30"
+                        ? "bg-[rgba(240,136,62,0.12)] text-[#F0883E]"
+                        : "bg-[rgba(52,199,149,0.12)] text-[#34C795]"
                     }`}
                   >
                     {c.severity}
                   </span>
                 </div>
 
-                <h3 className="text-xs font-extrabold text-white line-clamp-1 mb-1">
+                <h3 className="text-xs font-semibold text-[#E6EBF0] line-clamp-1 mb-1">
                   {c.title}
                 </h3>
 
-                <div className="flex items-center justify-between text-[10px] text-slate-400 mt-3 pt-2 border-t border-slate-800 font-mono">
-                  <span>Status: <strong className="text-white">{c.status}</strong></span>
+                <div className="flex items-center justify-between text-[10px] text-[#7C8896] mt-2 pt-1.5 border-t border-[#1F2933] font-mono">
+                  <span>Status: <strong className="text-[#E6EBF0]">{c.status}</strong></span>
                   <span>{c.email_count || 1} Emails</span>
                 </div>
               </div>
@@ -147,32 +135,30 @@ export default function ForensicCasesPage() {
           })}
         </div>
 
-        {/* Right Case Detail & Evidence View */}
+        {/* Right Case Detail */}
         {selectedCase && (
-          <div className="lg:col-span-2 space-y-5">
-            <div className="cyber-card p-6 rounded-2xl border border-slate-800 space-y-6">
-              {/* Header */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+          <div className="lg:col-span-2 space-y-4">
+            <div className="soc-card p-4 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#1F2933] pb-3">
                 <div>
-                  <span className="font-mono text-xs font-bold text-cyan-400">
+                  <span className="font-mono text-xs font-semibold text-[#2DD4BF]">
                     {selectedCase.case.case_number}
                   </span>
-                  <h2 className="text-base sm:text-lg font-black text-white mt-0.5">
+                  <h2 className="text-sm font-bold text-[#E6EBF0] mt-0.5">
                     {selectedCase.case.title}
                   </h2>
-                  <div className="text-xs text-slate-400 mt-1 flex items-center gap-2">
+                  <div className="text-xs text-[#7C8896] mt-1 flex items-center gap-1.5 font-mono">
                     <User className="w-3.5 h-3.5" />
-                    <span>Investigator: {selectedCase.case.investigator_name || "Lead SOC Analyst"}</span>
+                    <span>{selectedCase.case.investigator_name || "Lead Analyst"}</span>
                   </div>
                 </div>
 
-                {/* Status Switcher Dropdown */}
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-slate-400 font-mono">Status:</span>
+                  <span className="text-xs text-[#7C8896] font-mono">Status:</span>
                   <select
                     value={selectedCase.case.status}
                     onChange={(e) => handleStatusChange(e.target.value)}
-                    className="bg-[#080d1a] border border-cyan-500/40 rounded-lg px-3 py-1.5 text-xs text-cyan-300 font-bold focus:outline-none"
+                    className="bg-[#0B0F14] border border-[#1F2933] rounded px-2.5 py-1 text-xs text-[#E6EBF0] font-mono focus:outline-none focus:border-[#2DD4BF]"
                   >
                     {["Open", "Investigating", "Contained", "Resolved", "Archived"].map((st) => (
                       <option key={st} value={st}>
@@ -183,57 +169,53 @@ export default function ForensicCasesPage() {
                 </div>
               </div>
 
-              {/* Linked Incident Emails */}
-              <div className="space-y-3">
-                <h3 className="text-xs font-extrabold uppercase font-mono text-cyan-400">
-                  Associated Email Evidence ({selectedCase.emails?.length || 0})
-                </h3>
-                <div className="space-y-2">
+              {/* Associated Emails */}
+              <div className="space-y-2">
+                <div className="soc-label">Associated Emails ({selectedCase.emails?.length || 0})</div>
+                <div className="space-y-1.5">
                   {selectedCase.emails?.map((e: any) => (
-                    <div key={e.id} className="p-3 bg-[#080d1a] rounded-xl border border-slate-800 flex items-center justify-between text-xs">
+                    <div key={e.id} className="soc-card-nested p-2.5 flex items-center justify-between text-xs">
                       <div>
-                        <div className="font-bold text-white">{e.subject}</div>
-                        <div className="text-[10px] text-slate-400 font-mono mt-0.5">From: {e.from_addr}</div>
+                        <div className="font-medium text-[#E6EBF0]">{e.subject}</div>
+                        <div className="text-[10px] text-[#7C8896] font-mono mt-0.5">From: {e.from_addr}</div>
                       </div>
                       <Link
                         href={`/analyze?id=${e.id}`}
-                        className="text-cyan-400 hover:text-cyan-300 font-bold inline-flex items-center gap-1"
+                        className="text-[#2DD4BF] hover:underline font-mono text-[11px] inline-flex items-center gap-1"
                       >
-                        <span>Inspect Forensics</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
+                        <span>Inspect</span>
+                        <ArrowRight className="w-3 h-3" />
                       </Link>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Mitigation Action Items Checklist */}
-              <div className="space-y-3">
-                <h3 className="text-xs font-extrabold uppercase font-mono text-cyan-400">
-                  Containment & Mitigation Action Items
-                </h3>
-                <div className="space-y-2">
+              {/* Actions */}
+              <div className="space-y-2">
+                <div className="soc-label">Containment Actions</div>
+                <div className="space-y-1.5">
                   {selectedCase.case.action_items?.map((act: any) => (
                     <div
                       key={act.id}
                       onClick={() => handleToggleAction(act.id, act.is_completed)}
-                      className="p-3 bg-[#080d1a] hover:bg-[#111a30] rounded-xl border border-slate-800 flex items-center justify-between text-xs cursor-pointer transition-all"
+                      className="soc-card-nested p-2.5 flex items-center justify-between text-xs cursor-pointer hover:bg-[#1F2933]/50 transition-colors"
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2.5">
                         <input
                           type="checkbox"
                           checked={act.is_completed}
                           readOnly
-                          className="w-4 h-4 rounded border-slate-700 bg-slate-900 text-cyan-500 focus:ring-0 cursor-pointer"
+                          className="w-3.5 h-3.5 rounded border-[#1F2933] bg-[#0B0F14] text-[#2DD4BF] focus:ring-0 cursor-pointer"
                         />
                         <div>
-                          <div className={`font-bold ${act.is_completed ? "line-through text-slate-500" : "text-white"}`}>
+                          <div className={`font-medium ${act.is_completed ? "line-through text-[#7C8896]" : "text-[#E6EBF0]"}`}>
                             {act.title}
                           </div>
-                          <div className="text-[11px] text-slate-400">{act.reason}</div>
+                          <div className="text-[10px] text-[#7C8896]">{act.reason}</div>
                         </div>
                       </div>
-                      <span className="text-[9px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-800 text-slate-300">
+                      <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-[#0B0F14] text-[#7C8896]">
                         {act.priority}
                       </span>
                     </div>
@@ -242,18 +224,16 @@ export default function ForensicCasesPage() {
               </div>
 
               {/* Evidence Registry */}
-              <div className="space-y-3">
-                <h3 className="text-xs font-extrabold uppercase font-mono text-cyan-400">
-                  Immutable Evidence Vault ({selectedCase.evidence?.length || 0})
-                </h3>
-                <div className="space-y-2">
+              <div className="space-y-2">
+                <div className="soc-label">Evidence Vault ({selectedCase.evidence?.length || 0})</div>
+                <div className="space-y-1.5">
                   {selectedCase.evidence?.map((ev: any) => (
-                    <div key={ev.id} className="p-3 bg-[#080d1a] rounded-xl border border-slate-800 text-xs">
-                      <div className="flex items-center justify-between font-bold text-white mb-1">
+                    <div key={ev.id} className="soc-card-nested p-2 text-xs">
+                      <div className="flex items-center justify-between font-mono text-[#E6EBF0] mb-0.5">
                         <span>{ev.evidence_type}</span>
-                        <span className="text-emerald-400 font-mono text-[10px]">PRESERVED</span>
+                        <span className="text-[#34C795] text-[10px]">PRESERVED</span>
                       </div>
-                      <div className="text-[10px] text-slate-400 font-mono break-all">
+                      <div className="text-[10px] text-[#7C8896] font-mono break-all">
                         SHA-256: {ev.sha256}
                       </div>
                     </div>

@@ -1,21 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import {
-  Network,
-  Share2,
-  ZoomIn,
-  ZoomOut,
-  Maximize2,
-  Filter,
-  X,
-  Layers,
-  Globe,
-  Server,
-  Mail,
-  Link as LinkIcon,
-  ShieldAlert
-} from "lucide-react";
+import { useState } from "react";
+import { Network, X } from "lucide-react";
 
 interface NodeData {
   id: string;
@@ -40,7 +26,6 @@ interface AttackGraphViewProps {
 }
 
 export default function AttackGraphView({ graphData }: AttackGraphViewProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
   const [selectedNode, setSelectedNode] = useState<NodeData | null>(null);
   const [filterType, setFilterType] = useState<string>("ALL");
 
@@ -51,35 +36,34 @@ export default function AttackGraphView({ graphData }: AttackGraphViewProps) {
     ? nodes 
     : nodes.filter((n) => n.type.toLowerCase() === filterType.toLowerCase());
 
-  // Assign distinct theme colors per entity type
-  const getNodeColor = (type: string) => {
+  const getNodeBadgeColor = (type: string) => {
     switch (type.toLowerCase()) {
       case "email":
-        return { bg: "#ef4444", border: "#f87171", glow: "rgba(239,68,68,0.5)" };
+        return { dot: "#E5484D", bg: "rgba(229,72,77,0.12)", border: "rgba(229,72,77,0.3)" };
       case "domain":
-        return { bg: "#f59e0b", border: "#fbbf24", glow: "rgba(245,158,11,0.5)" };
+        return { dot: "#F0883E", bg: "rgba(240,136,62,0.12)", border: "rgba(240,136,62,0.3)" };
       case "ip":
-        return { bg: "#00f2fe", border: "#38bdf8", glow: "rgba(0,242,254,0.5)" };
+        return { dot: "#2DD4BF", bg: "rgba(45,212,191,0.12)", border: "rgba(45,212,191,0.3)" };
       case "asn":
-        return { bg: "#a855f7", border: "#c084fc", glow: "rgba(168,85,247,0.5)" };
+        return { dot: "#A78BFA", bg: "rgba(167,139,250,0.12)", border: "rgba(167,139,250,0.3)" };
       case "url":
-        return { bg: "#ec4899", border: "#f472b6", glow: "rgba(236,72,153,0.5)" };
+        return { dot: "#E8C547", bg: "rgba(232,197,71,0.12)", border: "rgba(232,197,71,0.3)" };
       case "campaign":
-        return { bg: "#10b981", border: "#34d399", glow: "rgba(16,185,129,0.5)" };
+        return { dot: "#34C795", bg: "rgba(52,199,149,0.12)", border: "rgba(52,199,149,0.3)" };
       default:
-        return { bg: "#64748b", border: "#94a3b8", glow: "rgba(100,116,139,0.5)" };
+        return { dot: "#7C8896", bg: "#161D26", border: "#1F2933" };
     }
   };
 
   return (
-    <div className="relative w-full h-[520px] bg-[#080d1a] border border-slate-800 rounded-2xl overflow-hidden flex flex-col">
-      {/* Top Graph Control Toolbar */}
-      <div className="p-3.5 bg-[#060913]/90 border-b border-slate-800 flex items-center justify-between z-10 flex-wrap gap-2">
+    <div className="relative w-full h-[460px] soc-card overflow-hidden flex flex-col">
+      {/* Header Toolbar */}
+      <div className="p-3 bg-[#0B0F14] border-b border-[#1F2933] flex items-center justify-between z-10 flex-wrap gap-2">
         <div className="flex items-center gap-2">
-          <Network className="w-4 h-4 text-cyan-400" />
-          <span className="text-xs font-bold text-white font-mono">TRACE-X ATTACK GRAPH MATRIX</span>
-          <span className="text-[10px] text-slate-400 font-mono bg-slate-800 px-2 py-0.5 rounded">
-            {filteredNodes.length} Entities • {edges.length} Edges
+          <Network className="w-4 h-4 text-[#2DD4BF]" strokeWidth={1.5} />
+          <span className="text-xs font-semibold text-[#E6EBF0] font-mono">Entity Attack Graph</span>
+          <span className="text-[10px] text-[#7C8896] font-mono">
+            ({filteredNodes.length} Nodes, {edges.length} Edges)
           </span>
         </div>
 
@@ -89,10 +73,10 @@ export default function AttackGraphView({ graphData }: AttackGraphViewProps) {
             <button
               key={t}
               onClick={() => setFilterType(t)}
-              className={`px-2 py-0.5 rounded font-bold transition-all cursor-pointer ${
+              className={`px-2 py-0.5 rounded transition-colors cursor-pointer ${
                 filterType === t
-                  ? "bg-cyan-500 text-slate-950"
-                  : "bg-[#111a30] text-slate-400 hover:text-slate-200"
+                  ? "bg-[#161D26] text-[#2DD4BF] font-semibold"
+                  : "text-[#7C8896] hover:text-[#E6EBF0]"
               }`}
             >
               {t}
@@ -101,43 +85,44 @@ export default function AttackGraphView({ graphData }: AttackGraphViewProps) {
         </div>
       </div>
 
-      {/* Main Interactive Graph Canvas */}
-      <div
-        ref={containerRef}
-        className="flex-1 relative cyber-grid p-6 flex items-center justify-center overflow-hidden select-none"
-      >
-        {/* Node-Link Layout Rendering */}
-        <div className="relative w-full h-full flex flex-wrap items-center justify-around gap-6 p-4 overflow-auto">
+      {/* Main Canvas */}
+      <div className="flex-1 relative p-4 flex items-center justify-center overflow-hidden bg-[#0B0F14] select-none">
+        {/* Subtle grid lines */}
+        <div
+          className="absolute inset-0 opacity-20 pointer-events-none"
+          style={{
+            backgroundImage: "linear-gradient(to right, #1F2933 1px, transparent 1px), linear-gradient(to bottom, #1F2933 1px, transparent 1px)",
+            backgroundSize: "20px 20px"
+          }}
+        ></div>
+
+        <div className="relative w-full h-full flex flex-wrap items-center justify-around gap-4 p-2 overflow-auto">
           {filteredNodes.map((node) => {
-            const colors = getNodeColor(node.type);
+            const colors = getNodeBadgeColor(node.type);
             const isSelected = selectedNode?.id === node.id;
 
             return (
               <div
                 key={node.id}
                 onClick={() => setSelectedNode(node)}
-                style={{
-                  borderColor: isSelected ? "#ffffff" : colors.border,
-                  boxShadow: isSelected ? `0 0 25px ${colors.glow}` : `0 0 10px ${colors.glow}`,
-                }}
-                className={`p-3 rounded-xl border bg-[#0c1222]/90 backdrop-blur-md cursor-pointer transition-all transform hover:scale-105 active:scale-95 max-w-[220px] text-left flex items-start gap-2.5 ${
-                  isSelected ? "ring-2 ring-white" : ""
+                className={`p-2.5 rounded-md border bg-[#10161D] cursor-pointer transition-colors max-w-[200px] text-left flex items-start gap-2 ${
+                  isSelected ? "border-[#2DD4BF] ring-1 ring-[#2DD4BF]" : "border-[#1F2933] hover:border-[#7C8896]"
                 }`}
               >
-                <div
-                  style={{ backgroundColor: colors.bg }}
-                  className="w-3 h-3 rounded-full mt-1 flex-shrink-0"
-                ></div>
+                <span
+                  style={{ backgroundColor: colors.dot }}
+                  className="w-2 h-2 rounded-full mt-1 flex-shrink-0"
+                ></span>
                 <div className="overflow-hidden">
-                  <div className="text-[9px] uppercase font-mono font-bold tracking-wider" style={{ color: colors.border }}>
+                  <div className="text-[9px] uppercase font-mono font-medium text-[#7C8896]">
                     {node.type}
                   </div>
-                  <div className="text-xs font-bold text-slate-100 truncate mt-0.5">
+                  <div className="text-xs font-mono font-semibold text-[#E6EBF0] truncate mt-0.5">
                     {node.label}
                   </div>
                   {node.data?.risk_score !== undefined && (
-                    <div className="text-[10px] font-mono text-slate-400 mt-1">
-                      Risk: <strong className="text-cyan-300">{node.data.risk_score}/100</strong>
+                    <div className="text-[10px] font-mono text-[#7C8896] mt-0.5">
+                      Score: <strong className="text-[#E6EBF0]">{node.data.risk_score}</strong>
                     </div>
                   )}
                 </div>
@@ -146,35 +131,34 @@ export default function AttackGraphView({ graphData }: AttackGraphViewProps) {
           })}
         </div>
 
-        {/* Selected Entity Inspection Drawer (Opens on Click) */}
+        {/* Node Detail Drawer */}
         {selectedNode && (
-          <div className="absolute top-4 right-4 bottom-4 w-80 bg-[#0c1222]/95 backdrop-blur-xl border border-cyan-500/40 rounded-xl p-4 shadow-2xl z-20 flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right-4 duration-200">
+          <div className="absolute top-3 right-3 bottom-3 w-72 bg-[#10161D] border border-[#1F2933] rounded-md p-3.5 shadow-xl z-20 flex flex-col justify-between overflow-y-auto">
             <div>
-              <div className="flex items-center justify-between border-b border-slate-800 pb-2 mb-3">
+              <div className="flex items-center justify-between border-b border-[#1F2933] pb-2 mb-2.5">
                 <div>
-                  <span className="text-[9px] uppercase font-mono font-bold text-cyan-400">
-                    {selectedNode.type} Entity Inspection
+                  <span className="text-[9px] uppercase font-mono text-[#2DD4BF]">
+                    {selectedNode.type} Inspection
                   </span>
-                  <h4 className="text-sm font-extrabold text-white truncate max-w-[220px]">
+                  <h4 className="text-xs font-mono font-bold text-[#E6EBF0] truncate max-w-[180px]">
                     {selectedNode.label}
                   </h4>
                 </div>
                 <button
                   onClick={() => setSelectedNode(null)}
-                  className="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800 cursor-pointer"
+                  className="text-[#7C8896] hover:text-[#E6EBF0] p-1 rounded cursor-pointer"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-3.5 h-3.5" />
                 </button>
               </div>
 
-              {/* Data fields */}
-              <div className="space-y-2 text-xs">
+              <div className="space-y-1.5 text-xs">
                 {Object.entries(selectedNode.data || {}).map(([key, val]) => {
                   if (typeof val === "object" || val === null || val === undefined) return null;
                   return (
-                    <div key={key} className="bg-[#111a30] p-2 rounded-lg border border-slate-800/80">
-                      <div className="text-[10px] text-slate-400 uppercase font-mono">{key.replace(/_/g, " ")}</div>
-                      <div className="font-semibold text-slate-100 font-mono break-all mt-0.5">
+                    <div key={key} className="bg-[#0B0F14] p-2 rounded border border-[#1F2933]">
+                      <div className="text-[9px] text-[#7C8896] uppercase font-mono">{key.replace(/_/g, " ")}</div>
+                      <div className="font-mono text-xs text-[#E6EBF0] break-all mt-0.5">
                         {String(val)}
                       </div>
                     </div>
@@ -183,25 +167,24 @@ export default function AttackGraphView({ graphData }: AttackGraphViewProps) {
               </div>
             </div>
 
-            <div className="pt-3 border-t border-slate-800/80 mt-3 text-[10px] text-slate-500 font-mono">
-              Entity ID: {selectedNode.id}
+            <div className="pt-2 border-t border-[#1F2933] mt-2 text-[9px] text-[#7C8896] font-mono">
+              ID: {selectedNode.id}
             </div>
           </div>
         )}
       </div>
 
-      {/* Legend Footer */}
-      <div className="px-4 py-2.5 bg-[#060913] border-t border-slate-800 flex items-center justify-between text-[10px] text-slate-400 flex-wrap gap-2">
+      {/* Footer Legend */}
+      <div className="px-3 py-2 bg-[#0B0F14] border-t border-[#1F2933] flex items-center justify-between text-[10px] text-[#7C8896] flex-wrap gap-2 font-mono">
         <div className="flex items-center gap-3">
-          <span className="font-bold text-slate-300">Entity Types:</span>
-          <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-red-500"></span> Email</div>
-          <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500"></span> Domain</div>
-          <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-cyan-400"></span> IP Node</div>
-          <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-purple-500"></span> ASN</div>
-          <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-pink-500"></span> URL</div>
-          <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500"></span> Campaign</div>
+          <div className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-[#E5484D]"></span> Email</div>
+          <div className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-[#F0883E]"></span> Domain</div>
+          <div className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-[#2DD4BF]"></span> IP Node</div>
+          <div className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-[#A78BFA]"></span> ASN</div>
+          <div className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-[#E8C547]"></span> URL</div>
+          <div className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-[#34C795]"></span> Campaign</div>
         </div>
-        <div className="font-mono text-cyan-400">Click any entity to inspect attributes</div>
+        <span>Click node to inspect attributes</span>
       </div>
     </div>
   );

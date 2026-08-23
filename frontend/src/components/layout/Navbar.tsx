@@ -2,16 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Search,
-  Zap,
-  Shield,
-  Bell,
-  Sparkles,
-  CheckCircle2,
-  Terminal,
-  Activity
-} from "lucide-react";
+import { Search, Sparkles, CheckCircle2 } from "lucide-react";
 import { loadDemoInvestigation } from "@/lib/api";
 
 export default function Navbar() {
@@ -32,7 +23,7 @@ export default function Navbar() {
       setIsLoadingDemo(true);
       const res = await loadDemoInvestigation();
       setDemoLoaded(true);
-      setTimeout(() => setDemoLoaded(false), 3000);
+      setTimeout(() => setDemoLoaded(false), 2500);
       if (res.active_email_id) {
         router.push(`/analyze?id=${res.active_email_id}`);
       }
@@ -44,47 +35,46 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-20 bg-[#080d1a]/95 backdrop-blur-md border-b border-slate-800/80 px-6 py-3">
+    <header className="sticky top-0 z-20 bg-[#0B0F14]/95 backdrop-blur-sm border-b border-[#1F2933] px-6 py-2.5">
       <div className="flex items-center justify-between gap-4">
-        {/* Universal IOC Quick Search */}
+        {/* Universal IOC Search */}
         <form onSubmit={handleSearch} className="relative flex-1 max-w-md">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#7C8896]" strokeWidth={1.5} />
           <input
             type="text"
-            placeholder="Search IP, Domain, URL, SHA-256 hash, ASN (e.g. 194.36.189.44)..."
+            placeholder="Search IP, Domain, URL, Hash, ASN..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-[#0c1222] border border-slate-800 rounded-lg pl-10 pr-4 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500/60 focus:ring-1 focus:ring-cyan-500/30 transition-all font-mono"
+            className="w-full bg-[#10161D] border border-[#1F2933] rounded-md pl-9 pr-3 py-1.5 text-xs text-[#E6EBF0] placeholder-[#7C8896] focus:outline-none focus:border-[#2DD4BF] font-mono transition-colors"
           />
         </form>
 
-        {/* Action Controls & Demo Loader */}
-        <div className="flex items-center gap-3">
-          {/* One-Click Load Demo Hero Button */}
+        {/* Actions & Profile */}
+        <div className="flex items-center gap-4">
+          {/* Feed Sync Indicator */}
+          <div className="hidden sm:flex items-center gap-1.5 text-[11px] text-[#7C8896] font-mono">
+            <span className="w-2 h-2 rounded-full bg-[#34C795]"></span>
+            <span>Feeds Synced</span>
+          </div>
+
+          {/* Single Load Demo Hero Button */}
           <button
             onClick={handleLoadDemo}
             disabled={isLoadingDemo}
-            className="relative group flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold px-3.5 py-1.5 rounded-lg text-xs shadow-md shadow-cyan-500/20 transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
+            className="flex items-center gap-1.5 bg-[#2DD4BF] hover:bg-[#14B8A6] disabled:opacity-50 text-[#0B0F14] font-semibold px-3 py-1.5 rounded-md text-xs transition-colors cursor-pointer"
           >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>{isLoadingDemo ? "Loading Case..." : demoLoaded ? "Demo Loaded!" : "Load Demo Investigation"}</span>
-            {demoLoaded && <CheckCircle2 className="w-3.5 h-3.5 text-slate-950" />}
+            <Sparkles className="w-3.5 h-3.5" strokeWidth={1.75} />
+            <span>{isLoadingDemo ? "Loading..." : demoLoaded ? "Loaded" : "Load Demo Case"}</span>
+            {demoLoaded && <CheckCircle2 className="w-3.5 h-3.5 text-[#0B0F14]" />}
           </button>
 
-          {/* Threat Feed Status */}
-          <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#0c1222] border border-slate-800 text-[11px] text-slate-300">
-            <Activity className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
-            <span className="font-mono text-cyan-300">SOC Feeds: 100% Synced</span>
-          </div>
-
-          {/* User Badge */}
-          <div className="flex items-center gap-2 pl-2 border-l border-slate-800">
-            <div className="w-7 h-7 rounded-full bg-cyan-950 border border-cyan-500/40 flex items-center justify-center text-cyan-300 text-xs font-bold">
+          {/* Investigator Profile */}
+          <div className="flex items-center gap-2 pl-3 border-l border-[#1F2933]">
+            <div className="w-7 h-7 rounded-md bg-[#161D26] border border-[#1F2933] flex items-center justify-center text-[#2DD4BF] text-xs font-mono font-bold">
               TX
             </div>
-            <div className="hidden sm:block text-left">
-              <div className="text-xs font-semibold text-slate-200">Lead Investigator</div>
-              <div className="text-[10px] text-cyan-400 font-mono">SOC Level 3</div>
+            <div className="hidden md:block text-left">
+              <div className="text-xs font-medium text-[#E6EBF0]">Analyst</div>
             </div>
           </div>
         </div>
