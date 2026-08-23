@@ -1,0 +1,120 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-main: #060913;
+    --bg-card: #0c1222;
+    --bg-card-hover: #111a30;
+    --bg-sidebar: #080d1a;
+    --border-glow: rgba(0, 242, 254, 0.18);
+    --border-subtle: rgba(255, 255, 255, 0.08);
+    --cyan: #00f2fe;
+    --cyan-glow: rgba(0, 242, 254, 0.4);
+    --emerald: #10b981;
+    --amber: #f59e0b;
+    --crimson: #ef4444;
+    --purple: #a855f7;
+  }
+
+  body {
+    background-color: var(--bg-main);
+    color: #e2e8f0;
+    font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    overflow-x: hidden;
+  }
+}
+
+/* Cyber Grid Background */
+.cyber-grid {
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.cyber-dots {
+  background-image: radial-gradient(rgba(0, 242, 254, 0.12) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Glassmorphic Cyber Cards */
+.cyber-card {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.75) 0%, rgba(10, 16, 30, 0.85) 100%);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  transition: all 0.2s ease-in-out;
+}
+
+.cyber-card:hover {
+  border-color: rgba(0, 242, 254, 0.3);
+  box-shadow: 0 8px 32px 0 rgba(0, 242, 254, 0.1);
+}
+
+.cyber-card-glow {
+  border: 1px solid rgba(0, 242, 254, 0.35);
+  box-shadow: 0 0 20px rgba(0, 242, 254, 0.15);
+}
+
+/* Neon Text Glow */
+.text-cyan-glow {
+  color: #00f2fe;
+  text-shadow: 0 0 12px rgba(0, 242, 254, 0.6);
+}
+
+.text-crimson-glow {
+  color: #ef4444;
+  text-shadow: 0 0 12px rgba(239, 68, 68, 0.6);
+}
+
+.text-emerald-glow {
+  color: #10b981;
+  text-shadow: 0 0 12px rgba(16, 185, 129, 0.6);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #080d1a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #00f2fe;
+}
+
+/* Leaflet Map Dark Inversion */
+.leaflet-container {
+  background: #090e1a !important;
+  font-family: inherit !important;
+  border-radius: 8px;
+}
+
+.dark-tiles .leaflet-tile {
+  filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
+}
+
+/* Cytoscape Container */
+#cy-container {
+  background: radial-gradient(circle at center, #0e172a 0%, #060913 100%);
+}
+
+/* Pulsing radar animation */
+@keyframes radar-pulse {
+  0% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.6); opacity: 0.2; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+.radar-ring {
+  animation: radar-pulse 2s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+}
