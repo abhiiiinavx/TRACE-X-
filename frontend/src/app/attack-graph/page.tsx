@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { getGlobalGraph } from "@/lib/api";
 import AttackGraphView from "@/components/graph/AttackGraphView";
+import PipelineRibbon from "@/components/layout/PipelineRibbon";
 
 export default function AttackGraphPage() {
   const [graphData, setGraphData] = useState<any>(null);
@@ -25,6 +26,9 @@ export default function AttackGraphPage() {
           Interactive entity-relationship graph connecting emails, lookalike domains, IPs, and campaign nodes
         </p>
       </div>
+
+      {/* Interactive Pipeline Ribbon Stepper */}
+      <PipelineRibbon activeStage="graph" />
 
       <AttackGraphView graphData={graphData || { nodes: [], edges: [] }} />
     </div>

@@ -39,6 +39,9 @@ class AuthValidator:
         dkim_status = "none"
         dmarc_status = "none"
         dmarc_policy = "none"
+        spf_reported = "unavailable"
+        dkim_reported = "unavailable"
+        dmarc_reported = "unavailable"
 
         # Check raw Authentication-Results or header lines
         auth_text = (auth_results_raw or "").lower()
@@ -46,30 +49,44 @@ class AuthValidator:
             if k.lower() in ["received-spf", "x-spam-status", "authentication-results", "dkim-signature"]:
                 auth_text += " " + v.lower()
 
-        # SPF extraction
+        # 1. SPF extraction (Reported in headers vs none)
         if "spf=pass" in auth_text or "received-spf: pass" in auth_text:
             spf_status = "pass"
+            spf_reported = "pass"
         elif "spf=fail" in auth_text or "received-spf: fail" in auth_text:
             spf_status = "fail"
+            spf_reported = "fail"
         elif "spf=softfail" in auth_text or "received-spf: softfail" in auth_text:
             spf_status = "softfail"
+            spf_reported = "softfail"
         elif "spf=neutral" in auth_text:
             spf_status = "neutral"
+            spf_reported = "neutral"
 
-        # DKIM extraction
+        # 2. DKIM extraction (Do NOT mark pass merely because DKIM-Signature header exists)
+        has_dkim_sig = any(k.lower() == "dkim-signature" for k, v in all_headers)
         if "dkim=pass" in auth_text:
             dkim_status = "pass"
+            dkim_reported = "pass"
         elif "dkim=fail" in auth_text:
             dkim_status = "fail"
-        elif any(k.lower() == "dkim-signature" for k, v in all_headers):
-            # Signature exists; if no explicit failure, mark valid or pass
-            dkim_status = "pass" if spf_status == "pass" else "neutral"
+            dkim_reported = "fail"
+        elif has_dkim_sig:
+            # Header present but no MTA Authentication-Results pass recorded
+            dkim_status = "unverified"
+            dkim_reported = "signature_present_unverified"
+        else:
+            dkim_status = "none"
+            dkim_reported = "none"
 
-        # DMARC extraction
+        # 3. DMARC extraction & Alignment Inference
         if "dmarc=pass" in auth_text:
             dmarc_status = "pass"
+            dmarc_reported = "pass"
+            dmarc_policy = "none"
         elif "dmarc=fail" in auth_text:
             dmarc_status = "fail"
+            dmarc_reported = "fail"
             if "p=reject" in auth_text:
                 dmarc_policy = "reject"
             elif "p=quarantine" in auth_text:
@@ -77,12 +94,17 @@ class AuthValidator:
             else:
                 dmarc_policy = "none"
         else:
-            # Infer DMARC alignment
+            # Infer DMARC alignment heuristically from envelope & headers
             if spf_status == "pass" and dkim_status == "pass" and from_domain == return_path_domain:
                 dmarc_status = "pass"
+                dmarc_reported = "inferred_pass"
             elif spf_status == "fail" or (return_path_domain and from_domain != return_path_domain):
                 dmarc_status = "fail"
                 dmarc_policy = "quarantine"
+                dmarc_reported = "inferred_fail"
+            else:
+                dmarc_status = "none"
+                dmarc_reported = "unavailable"
 
         # Return-Path vs From Alignment
         return_path_aligned = True
@@ -140,6 +162,10 @@ class AuthValidator:
             "dkim_status": dkim_status,
             "dmarc_status": dmarc_status,
             "dmarc_policy": dmarc_policy,
+            "spf_reported": spf_reported,
+            "dkim_reported": dkim_reported,
+            "dmarc_reported": dmarc_reported,
+            "verification_method": "Header-Reported MTA Evidence & Envelope Alignment",
             "return_path_aligned": return_path_aligned,
             "return_path_domain": return_path_domain,
             "alignment_note": alignment_note,

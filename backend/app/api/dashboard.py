@@ -86,7 +86,7 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
             })
 
     # 3. Real Top Domains from Database
-    db_domains = db.query(Domain).order_by(Domain.risk_score.desc(), Domain.created_at.desc()).limit(5).all()
+    db_domains = db.query(Domain).order_by(Domain.risk_score.desc(), Domain.last_analyzed.desc()).limit(5).all()
     top_domains = []
     for d in db_domains:
         hits = db.query(Email).filter(Email.from_addr.ilike(f"%{d.domain}%")).count()
@@ -98,7 +98,7 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
         })
 
     # 4. Real Top IPs from Database
-    db_ips = db.query(IP).filter(IP.ip != "127.0.0.1").order_by(IP.risk_score.desc(), IP.created_at.desc()).limit(5).all()
+    db_ips = db.query(IP).filter(IP.ip != "127.0.0.1").order_by(IP.risk_score.desc(), IP.last_analyzed.desc()).limit(5).all()
     top_ips = []
     for ip_obj in db_ips:
         top_ips.append({

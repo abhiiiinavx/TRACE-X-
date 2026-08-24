@@ -189,6 +189,14 @@ def run_forensic_pipeline(parsed_data: Dict[str, Any], db: Session, user_email: 
         )
         db.add(db_att)
 
+    for h_name, h_val in all_headers:
+        db_header = EmailHeader(
+            email_id=email_record.id,
+            header_name=h_name,
+            header_value=str(h_val)
+        )
+        db.add(db_header)
+
     # Persist Domain
     existing_domain = db.query(Domain).filter(Domain.domain == from_domain).first()
     if not existing_domain:
@@ -363,7 +371,16 @@ async def analyze_raw_text(
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
-    raw_email_str = f"Subject: {subject}\n{raw_headers}\n\n{raw_body}"
+    body_stripped = raw_body.strip()
+    if (body_stripped.startswith("From:") or body_stripped.startswith("Received:") or 
+        "\nReceived:" in body_stripped or "\nFrom:" in body_stripped):
+        raw_email_str = raw_body
+    else:
+        headers_block = raw_headers.strip()
+        if "subject:" not in headers_block.lower():
+            headers_block = f"Subject: {subject}\n{headers_block}"
+        raw_email_str = f"{headers_block}\n\n{raw_body}"
+
     parsed = EmlParser.parse_eml_bytes(raw_email_str.encode("utf-8", errors="ignore"))
     email_record = run_forensic_pipeline(parsed, db, user_email=current_user.email if current_user else "analyst@tracex.forensics")
     return {"status": "success", "email_id": email_record.id, "risk_score": email_record.risk_score, "severity": email_record.severity}

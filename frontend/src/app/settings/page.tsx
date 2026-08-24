@@ -1,23 +1,28 @@
 "use client";
 
-import { useState } from "react";
-import { Sliders, Shield, Key, Terminal, Check } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Shield, Key, Terminal, RefreshCw } from "lucide-react";
+import { getAuditLogs } from "@/lib/api";
 
 export default function SettingsPage() {
-  const [providerMode, setProviderMode] = useState("MOCK");
-  const [saveStatus, setSaveStatus] = useState(false);
+  const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [loadingLogs, setLoadingLogs] = useState(true);
 
-  const handleSave = () => {
-    setSaveStatus(true);
-    setTimeout(() => setSaveStatus(false), 2000);
+  useEffect(() => {
+    loadAuditLogs();
+  }, []);
+
+  const loadAuditLogs = async () => {
+    setLoadingLogs(true);
+    try {
+      const logs = await getAuditLogs(50);
+      setAuditLogs(logs);
+    } catch (err) {
+      console.error("Failed to load audit logs:", err);
+    } finally {
+      setLoadingLogs(false);
+    }
   };
-
-  const AUDIT_LOGS = [
-    { timestamp: "2026-08-24 01:32:04", user: "analyst@tracex.forensics", action: "EXPORT_REPORT", target: "Email #PP-849204", ip: "127.0.0.1" },
-    { timestamp: "2026-08-24 01:30:12", user: "analyst@tracex.forensics", action: "COPILOT_QUERY", target: "Case TX-2026-0001", ip: "127.0.0.1" },
-    { timestamp: "2026-08-24 01:28:44", user: "analyst@tracex.forensics", action: "RUN_ANALYSIS", target: "Email (PayPal Phish)", ip: "127.0.0.1" },
-    { timestamp: "2026-08-24 01:25:01", user: "admin@tracex.forensics", action: "LOGIN", target: "Session Auth", ip: "127.0.0.1" }
-  ];
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-12">
@@ -26,7 +31,7 @@ export default function SettingsPage() {
           Platform Settings & Audit Ledger
         </h1>
         <p className="text-xs md:text-sm text-[#64748B] mt-1">
-          Configure threat intelligence connectors, role permissions, and review the immutable audit ledger
+          Review deterministic local threat intelligence configuration, RBAC permissions, and the live immutable audit ledger
         </p>
       </div>
 
@@ -35,49 +40,35 @@ export default function SettingsPage() {
         <div className="flex items-center justify-between border-b border-[#F1F5F9] pb-3">
           <div className="flex items-center gap-2">
             <Key className="w-5 h-5 text-[#4F46E5]" />
-            <h2 className="text-sm font-bold text-[#0F172A]">Threat Intelligence Connectors</h2>
+            <h2 className="text-sm font-bold text-[#0F172A]">Local Threat Intelligence — Offline Mode</h2>
           </div>
-          <span className="text-xs font-bold text-[#16A34A] bg-[#F0FDF4] px-3 py-1 rounded-full">
-            Zero-Key Offline Presentation Mode
+          <span className="text-xs font-bold text-[#16A34A] bg-[#F0FDF4] px-3 py-1 rounded-full border border-[#DCFCE7]">
+            Local Intel Active (Deterministic)
           </span>
         </div>
 
         <div className="space-y-3 text-xs">
-          <label className="flex items-center gap-2.5 text-[#0F172A] font-semibold cursor-pointer">
-            <input
-              type="radio"
-              name="provider"
-              checked={providerMode === "MOCK"}
-              onChange={() => setProviderMode("MOCK")}
-              className="text-[#4F46E5] focus:ring-0"
-            />
-            <span>High-Fidelity Deterministic MockProvider (Offline Mode)</span>
-          </label>
-
-          <p className="text-xs text-[#64748B] pl-6 leading-relaxed">
-            The platform operates with zero external paid API keys required. BGP ASNs, WHOIS, and IP geolocations are evaluated deterministically.
-          </p>
-
-          <div className="pt-2 pl-6 space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
-              <input
-                type="password"
-                placeholder="Optional VirusTotal API Key..."
-                className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-3.5 py-2 text-[#0F172A] text-xs focus:outline-none focus:border-[#4F46E5] focus:bg-white"
-              />
-              <input
-                type="password"
-                placeholder="Optional AbuseIPDB API Key..."
-                className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-3.5 py-2 text-[#0F172A] text-xs focus:outline-none focus:border-[#4F46E5] focus:bg-white"
-              />
+          <div className="p-3.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl space-y-1.5">
+            <div className="flex items-center justify-between font-bold text-[#0F172A]">
+              <span>Active Provider: Deterministic MockThreatIntelProvider</span>
+              <span className="text-[10px] text-[#4F46E5] bg-[#EEF2FF] px-2 py-0.5 rounded-full font-mono">
+                ZERO EXTERNAL KEYS REQUIRED
+              </span>
             </div>
-            <button
-              onClick={handleSave}
-              className="bg-[#4F46E5] hover:bg-[#4338CA] text-white px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-sm flex items-center gap-1.5"
-            >
-              {saveStatus ? <Check className="w-3.5 h-3.5" /> : null}
-              <span>{saveStatus ? "Settings Saved" : "Save Settings"}</span>
-            </button>
+            <p className="text-xs text-[#64748B] leading-relaxed">
+              TRACE-X operates in fully reliable, deterministic offline mode for SIH 2026. BGP ASNs, domain lookalikes, IP geolocations, and signature correlations execute locally without external API latency or quota failures.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-1">
+            <div className="clean-card-nested p-3 space-y-1">
+              <div className="text-[11px] font-bold text-[#64748B] uppercase">BGP Routing & ASN Lookup</div>
+              <div className="font-semibold text-xs text-[#0F172A]">Local GeoLite2 & ASN Matrix (Offline)</div>
+            </div>
+            <div className="clean-card-nested p-3 space-y-1">
+              <div className="text-[11px] font-bold text-[#64748B] uppercase">Typosquatting & Brand Detection</div>
+              <div className="font-semibold text-xs text-[#0F172A]">Levenshtein & Jaro-Winkler Heuristic Engine</div>
+            </div>
           </div>
         </div>
       </div>
@@ -111,21 +102,32 @@ export default function SettingsPage() {
 
       {/* Audit Logs */}
       <div className="clean-card overflow-hidden">
-        <div className="p-4 border-b border-[#F1F5F9] bg-[#F8FAFC] flex items-center justify-between">
+        <div className="p-4 border-b border-[#F1F5F9] bg-[#F8FAFC] flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2">
             <Terminal className="w-4 h-4 text-[#4F46E5]" />
-            <span className="text-xs font-bold text-[#0F172A]">Immutable Security Audit Ledger</span>
+            <span className="text-xs font-bold text-[#0F172A]">Database Security Audit Ledger</span>
+            <span className="text-[11px] text-[#64748B] font-medium">({auditLogs.length} Records)</span>
           </div>
-          <span className="text-[11px] text-[#16A34A] font-bold bg-[#F0FDF4] px-2.5 py-0.5 rounded-full">
-            Hash Chained
-          </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={loadAuditLogs}
+              className="text-xs text-[#4F46E5] hover:bg-white p-1 rounded-lg border border-transparent hover:border-[#E2E8F0] flex items-center gap-1 cursor-pointer"
+              title="Refresh Audit Logs"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${loadingLogs ? "animate-spin" : ""}`} />
+              <span>Refresh</span>
+            </button>
+            <span className="text-[11px] text-[#16A34A] font-bold bg-[#F0FDF4] px-2.5 py-0.5 rounded-full border border-[#DCFCE7]">
+              Immutable Database
+            </span>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs text-[#64748B]">
             <thead className="bg-[#F8FAFC] uppercase text-[10px] font-bold border-b border-[#E2E8F0]">
               <tr>
-                <th className="px-5 py-3">Timestamp</th>
+                <th className="px-5 py-3">Timestamp (UTC)</th>
                 <th className="px-5 py-3">User</th>
                 <th className="px-5 py-3">Action</th>
                 <th className="px-5 py-3">Target</th>
@@ -133,15 +135,29 @@ export default function SettingsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#F1F5F9] font-mono text-xs">
-              {AUDIT_LOGS.map((log, idx) => (
-                <tr key={idx} className="hover:bg-[#F8FAFC]">
-                  <td className="px-5 py-3 text-[#64748B]">{log.timestamp}</td>
-                  <td className="px-5 py-3 text-[#4F46E5] font-bold">{log.user}</td>
-                  <td className="px-5 py-3 text-[#0F172A] font-semibold">{log.action}</td>
-                  <td className="px-5 py-3 text-[#64748B]">{log.target}</td>
-                  <td className="px-5 py-3 text-[#64748B]">{log.ip}</td>
+              {auditLogs.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-5 py-6 text-center text-[#64748B] font-sans">
+                    {loadingLogs ? "Loading security audit records from database..." : "No audit events recorded yet."}
+                  </td>
                 </tr>
-              ))}
+              ) : (
+                auditLogs.map((log, idx) => (
+                  <tr key={log.id || idx} className="hover:bg-[#F8FAFC]">
+                    <td className="px-5 py-3 text-[#64748B] whitespace-nowrap">
+                      {log.created_at ? new Date(log.created_at).toISOString().replace("T", " ").substring(0, 19) : "Just now"}
+                    </td>
+                    <td className="px-5 py-3 text-[#4F46E5] font-bold whitespace-nowrap">{log.username || "System"}</td>
+                    <td className="px-5 py-3 text-[#0F172A] font-semibold">
+                      <span className="bg-[#F1F5F9] px-2 py-0.5 rounded-md text-[11px]">
+                        {log.action}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3 text-[#64748B]">{log.target_type ? `${log.target_type} #${(log.target_id || "").substring(0, 8)}` : "System"}</td>
+                    <td className="px-5 py-3 text-[#64748B]">{log.ip_addr || "127.0.0.1"}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

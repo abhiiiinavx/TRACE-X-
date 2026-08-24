@@ -92,8 +92,8 @@ export default function CopilotDrawer({ emailId, caseId }: CopilotDrawerProps) {
                 <Bot className="w-5 h-5" />
               </div>
               <div>
-                <div className="text-xs font-bold text-[#0F172A]">TRACE-X Copilot</div>
-                <div className="text-[11px] text-[#64748B]">Evidence-Grounded Forensic AI</div>
+                <div className="text-xs font-bold text-[#0F172A]">Evidence-Grounded Forensic Copilot</div>
+                <div className="text-[11px] text-[#64748B]">Telemetry & RFC 5322 Evidence Scoped</div>
               </div>
             </div>
             <button
@@ -121,7 +121,7 @@ export default function CopilotDrawer({ emailId, caseId }: CopilotDrawerProps) {
                   <div className="whitespace-pre-line">{m.text}</div>
                   {m.sources && m.sources.length > 0 && (
                     <div className="mt-2 pt-1.5 border-t border-[#E2E8F0] text-[10px] text-[#64748B]">
-                      Sources: {m.sources.join(" • ")}
+                      <strong className="text-[#4F46E5]">Evidence Used:</strong> {m.sources.join(" • ")}
                     </div>
                   )}
                 </div>

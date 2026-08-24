@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { Network, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import cytoscape, { Core } from "cytoscape";
+import { Network, X, Maximize2, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
 
 interface NodeData {
   id: string;
@@ -26,116 +27,292 @@ interface AttackGraphViewProps {
 }
 
 export default function AttackGraphView({ graphData }: AttackGraphViewProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const cyRef = useRef<Core | null>(null);
   const [selectedNode, setSelectedNode] = useState<NodeData | null>(null);
   const [filterType, setFilterType] = useState<string>("ALL");
 
   const nodes = graphData?.nodes || [];
   const edges = graphData?.edges || [];
 
-  const filteredNodes = filterType === "ALL" 
-    ? nodes 
+  const filteredNodes = filterType === "ALL"
+    ? nodes
     : nodes.filter((n) => n.type.toLowerCase() === filterType.toLowerCase());
 
-  const getNodeBadgeColor = (type: string) => {
+  const filteredNodeIds = new Set(filteredNodes.map((n) => n.id));
+  const filteredEdges = edges.filter(
+    (e) => filteredNodeIds.has(e.source) && filteredNodeIds.has(e.target)
+  );
+
+  const getNodeColor = (type: string) => {
     switch (type.toLowerCase()) {
       case "email":
-        return { dot: "#EF4444", bg: "#FEF2F2", border: "#FEE2E2", text: "#DC2626" };
+        return "#EF4444";
       case "domain":
-        return { dot: "#F97316", bg: "#FFF7ED", border: "#FFEDD5", text: "#EA580C" };
+        return "#F97316";
       case "ip":
-        return { dot: "#4F46E5", bg: "#EEF2FF", border: "#C7D2FE", text: "#4338CA" };
+        return "#4F46E5";
       case "asn":
-        return { dot: "#8B5CF6", bg: "#F5F3FF", border: "#DDD6FE", text: "#7C3AED" };
+        return "#8B5CF6";
       case "url":
-        return { dot: "#F59E0B", bg: "#FFFBEB", border: "#FEF3C7", text: "#D97706" };
+        return "#F59E0B";
       case "campaign":
-        return { dot: "#6366F1", bg: "#EEF2FF", border: "#C7D2FE", text: "#4F46E5" };
+        return "#6366F1";
+      case "attachment":
+        return "#EC4899";
       default:
-        return { dot: "#64748B", bg: "#F8FAFC", border: "#E2E8F0", text: "#334155" };
+        return "#64748B";
+    }
+  };
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    // Destroy existing instance
+    if (cyRef.current) {
+      cyRef.current.destroy();
+      cyRef.current = null;
+    }
+
+    const elements = [
+      ...filteredNodes.map((n) => ({
+        data: {
+          id: n.id,
+          label: n.label.length > 22 ? n.label.substring(0, 20) + "..." : n.label,
+          fullLabel: n.label,
+          type: n.type,
+          nodeColor: getNodeColor(n.type),
+          raw: n.data,
+        },
+      })),
+      ...filteredEdges.map((e, idx) => ({
+        data: {
+          id: e.id || `edge-${idx}`,
+          source: e.source,
+          target: e.target,
+          label: e.label || "",
+        },
+      })),
+    ];
+
+    const cy = cytoscape({
+      container: containerRef.current,
+      elements: elements,
+      boxSelectionEnabled: false,
+      autounselectify: false,
+      style: [
+        {
+          selector: "node",
+          style: {
+            "background-color": "data(nodeColor)",
+            label: "data(label)",
+            "font-size": "11px",
+            "font-weight": "bold",
+            "font-family": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+            color: "#0F172A",
+            "text-valign": "bottom",
+            "text-margin-y": 6,
+            "text-background-color": "#ffffff",
+            "text-background-opacity": 0.85,
+            "text-background-padding": "3px",
+            "text-background-shape": "roundrectangle",
+            width: 32,
+            height: 32,
+            "border-width": 3,
+            "border-color": "#ffffff",
+            "overlay-padding": 4,
+          },
+        },
+        {
+          selector: "edge",
+          style: {
+            width: 2,
+            "line-color": "#CBD5E1",
+            "target-arrow-color": "#94A3B8",
+            "target-arrow-shape": "triangle",
+            "curve-style": "bezier",
+            "arrow-scale": 1.2,
+            label: "data(label)",
+            "font-size": "9px",
+            "font-family": "monospace",
+            color: "#64748B",
+            "text-background-color": "#F8FAFC",
+            "text-background-opacity": 0.9,
+            "text-background-padding": "2px",
+            "text-background-shape": "roundrectangle",
+            "text-rotation": "autorotate",
+          },
+        },
+        {
+          selector: "node:selected",
+          style: {
+            "border-width": 4,
+            "border-color": "#4F46E5",
+            width: 38,
+            height: 38,
+          },
+        },
+        {
+          selector: ".highlighted",
+          style: {
+            "line-color": "#4F46E5",
+            "target-arrow-color": "#4F46E5",
+            width: 3,
+          },
+        },
+        {
+          selector: ".dimmed",
+          style: {
+            opacity: 0.25,
+          },
+        },
+      ],
+      layout: {
+        name: "cose",
+        animate: false,
+        padding: 50,
+        nodeOverlap: 20,
+        idealEdgeLength: () => 100,
+        nodeRepulsion: () => 400000,
+      },
+    });
+
+    cy.on("tap", "node", (evt) => {
+      const node = evt.target;
+      const nodeObj = filteredNodes.find((n) => n.id === node.id());
+      if (nodeObj) {
+        setSelectedNode(nodeObj);
+      }
+
+      // Highlight neighborhood
+      cy.elements().removeClass("highlighted dimmed");
+      const neighborhood = node.neighborhood().add(node);
+      cy.elements().not(neighborhood).addClass("dimmed");
+      neighborhood.addClass("highlighted");
+    });
+
+    cy.on("tap", (evt) => {
+      if (evt.target === cy) {
+        setSelectedNode(null);
+        cy.elements().removeClass("highlighted dimmed");
+      }
+    });
+
+    cyRef.current = cy;
+
+    return () => {
+      if (cyRef.current) {
+        cyRef.current.destroy();
+        cyRef.current = null;
+      }
+    };
+  }, [filteredNodes.length, filteredEdges.length, filterType]);
+
+  const handleFit = () => {
+    if (cyRef.current) {
+      cyRef.current.fit(undefined, 30);
+    }
+  };
+
+  const handleZoomIn = () => {
+    if (cyRef.current) {
+      cyRef.current.zoom(cyRef.current.zoom() * 1.25);
+    }
+  };
+
+  const handleZoomOut = () => {
+    if (cyRef.current) {
+      cyRef.current.zoom(cyRef.current.zoom() * 0.8);
+    }
+  };
+
+  const handleReset = () => {
+    if (cyRef.current) {
+      cyRef.current.layout({ name: "cose", padding: 50 }).run();
+      cyRef.current.fit(undefined, 30);
     }
   };
 
   return (
-    <div className="relative w-full h-[520px] clean-card overflow-hidden flex flex-col shadow-sm">
+    <div className="relative w-full h-[540px] clean-card overflow-hidden flex flex-col shadow-sm">
       {/* Header Toolbar */}
       <div className="p-4 bg-[#F8FAFC] border-b border-[#E2E8F0] flex items-center justify-between z-10 flex-wrap gap-2">
         <div className="flex items-center gap-2">
           <Network className="w-4 h-4 text-[#4F46E5]" />
-          <span className="text-xs font-bold text-[#0F172A]">Entity Matrix Canvas</span>
+          <span className="text-xs font-bold text-[#0F172A]">Interactive Entity Matrix Graph</span>
           <span className="text-[11px] text-[#64748B] font-medium">
-            ({filteredNodes.length} Nodes, {edges.length} Edges)
+            ({filteredNodes.length} Nodes, {filteredEdges.length} Edges)
           </span>
         </div>
 
-        {/* Filter Pills */}
-        <div className="flex items-center gap-1.5 text-xs font-medium">
-          {["ALL", "EMAIL", "DOMAIN", "IP", "URL", "ASN", "CAMPAIGN"].map((t) => (
+        <div className="flex items-center gap-2">
+          {/* Zoom & Fit Controls */}
+          <div className="flex items-center gap-1 bg-white border border-[#E2E8F0] p-1 rounded-xl shadow-2xs">
             <button
-              key={t}
-              onClick={() => setFilterType(t)}
-              className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
-                filterType === t
-                  ? "bg-[#4F46E5] text-white font-bold shadow-sm"
-                  : "bg-white text-[#64748B] hover:text-[#0F172A] border border-[#E2E8F0]"
-              }`}
+              onClick={handleZoomIn}
+              className="p-1 text-[#64748B] hover:text-[#0F172A] hover:bg-[#F8FAFC] rounded-lg transition-colors cursor-pointer"
+              title="Zoom In"
             >
-              {t}
+              <ZoomIn className="w-3.5 h-3.5" />
             </button>
-          ))}
+            <button
+              onClick={handleZoomOut}
+              className="p-1 text-[#64748B] hover:text-[#0F172A] hover:bg-[#F8FAFC] rounded-lg transition-colors cursor-pointer"
+              title="Zoom Out"
+            >
+              <ZoomOut className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={handleFit}
+              className="p-1 text-[#64748B] hover:text-[#0F172A] hover:bg-[#F8FAFC] rounded-lg transition-colors cursor-pointer"
+              title="Fit Graph to Screen"
+            >
+              <Maximize2 className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={handleReset}
+              className="p-1 text-[#64748B] hover:text-[#0F172A] hover:bg-[#F8FAFC] rounded-lg transition-colors cursor-pointer"
+              title="Reset Graph Layout"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          {/* Filter Pills */}
+          <div className="flex items-center gap-1 text-xs font-medium">
+            {["ALL", "EMAIL", "DOMAIN", "IP", "URL", "ASN", "CAMPAIGN"].map((t) => (
+              <button
+                key={t}
+                onClick={() => setFilterType(t)}
+                className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                  filterType === t
+                    ? "bg-[#4F46E5] text-white font-bold shadow-sm"
+                    : "bg-white text-[#64748B] hover:text-[#0F172A] border border-[#E2E8F0]"
+                }`}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Main Canvas */}
-      <div className="flex-1 relative p-6 flex items-center justify-center overflow-hidden bg-white select-none">
+      {/* Main Cytoscape Canvas */}
+      <div className="flex-1 relative overflow-hidden bg-white select-none">
         {/* Dot grid texture */}
         <div
-          className="absolute inset-0 opacity-40 pointer-events-none"
+          className="absolute inset-0 opacity-30 pointer-events-none z-0"
           style={{
             backgroundImage: "radial-gradient(#CBD5E1 1px, transparent 1px)",
-            backgroundSize: "24px 24px"
+            backgroundSize: "20px 20px",
           }}
         ></div>
 
-        <div className="relative w-full h-full flex flex-wrap items-center justify-around gap-4 p-4 overflow-auto">
-          {filteredNodes.map((node) => {
-            const colors = getNodeBadgeColor(node.type);
-            const isSelected = selectedNode?.id === node.id;
-
-            return (
-              <div
-                key={node.id}
-                onClick={() => setSelectedNode(node)}
-                className={`p-3 rounded-2xl border cursor-pointer transition-all duration-150 transform hover:scale-105 max-w-[210px] text-left flex items-start gap-2.5 shadow-sm ${
-                  isSelected
-                    ? "border-[#4F46E5] ring-2 ring-[#EEF2FF] bg-white shadow-md"
-                    : "border-[#E2E8F0] hover:border-[#CBD5E1] bg-white"
-                }`}
-              >
-                <span
-                  style={{ backgroundColor: colors.dot }}
-                  className="w-2.5 h-2.5 rounded-full mt-1 flex-shrink-0"
-                ></span>
-                <div className="overflow-hidden">
-                  <div className="text-[10px] uppercase font-bold text-[#64748B]">
-                    {node.type}
-                  </div>
-                  <div className="text-xs font-bold text-[#0F172A] truncate mt-0.5">
-                    {node.label}
-                  </div>
-                  {node.data?.risk_score !== undefined && (
-                    <div className="text-[11px] text-[#64748B] mt-0.5">
-                      Score: <strong className="text-[#0F172A]">{node.data.risk_score}</strong>
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        <div ref={containerRef} className="w-full h-full relative z-10" />
 
         {/* Node Detail Drawer */}
         {selectedNode && (
-          <div className="absolute top-4 right-4 bottom-4 w-80 bg-white border border-[#E2E8F0] rounded-2xl p-4 shadow-2xl z-20 flex flex-col justify-between overflow-y-auto">
+          <div className="absolute top-4 right-4 bottom-4 w-80 bg-white border border-[#E2E8F0] rounded-2xl p-4 shadow-2xl z-30 flex flex-col justify-between overflow-y-auto">
             <div>
               <div className="flex items-center justify-between border-b border-[#F1F5F9] pb-3 mb-3">
                 <div>
@@ -159,7 +336,9 @@ export default function AttackGraphView({ graphData }: AttackGraphViewProps) {
                   if (typeof val === "object" || val === null || val === undefined) return null;
                   return (
                     <div key={key} className="bg-[#F8FAFC] p-2.5 rounded-xl border border-[#E2E8F0]">
-                      <div className="text-[10px] text-[#64748B] uppercase font-bold">{key.replace(/_/g, " ")}</div>
+                      <div className="text-[10px] text-[#64748B] uppercase font-bold">
+                        {key.replace(/_/g, " ")}
+                      </div>
                       <div className="font-semibold text-xs text-[#0F172A] break-all mt-0.5">
                         {String(val)}
                       </div>
@@ -170,7 +349,7 @@ export default function AttackGraphView({ graphData }: AttackGraphViewProps) {
             </div>
 
             <div className="pt-3 border-t border-[#F1F5F9] mt-3 text-[10px] text-[#94A3B8] font-mono">
-              ID: {selectedNode.id}
+              Entity ID: {selectedNode.id}
             </div>
           </div>
         )}
@@ -179,14 +358,26 @@ export default function AttackGraphView({ graphData }: AttackGraphViewProps) {
       {/* Footer Legend */}
       <div className="px-5 py-3 bg-[#F8FAFC] border-t border-[#E2E8F0] flex items-center justify-between text-xs text-[#64748B] flex-wrap gap-2">
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-[#EF4444]"></span> Email</div>
-          <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-[#F97316]"></span> Domain</div>
-          <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-[#4F46E5]"></span> IP Node</div>
-          <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-[#8B5CF6]"></span> ASN</div>
-          <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-[#F59E0B]"></span> URL</div>
-          <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-[#6366F1]"></span> Campaign</div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#EF4444]"></span> Email
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#F97316]"></span> Domain
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#4F46E5]"></span> IP Node
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#8B5CF6]"></span> ASN
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#F59E0B]"></span> URL
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#6366F1]"></span> Campaign
+          </div>
         </div>
-        <span className="font-medium">Click node to inspect forensic attributes</span>
+        <span className="font-medium">Interactive Cytoscape Matrix • Drag nodes or click to inspect</span>
       </div>
     </div>
   );

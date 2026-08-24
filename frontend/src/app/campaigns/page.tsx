@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Megaphone, Mail, ArrowRight, CheckCircle2, Dna } from "lucide-react";
 import { listCampaigns, getCampaignDetail } from "@/lib/api";
+import PipelineRibbon from "@/components/layout/PipelineRibbon";
 
 export default function CampaignsPage() {
   const [campaigns, setCampaigns] = useState<any[]>([]);
@@ -35,12 +36,15 @@ export default function CampaignsPage() {
     <div className="space-y-6 max-w-[1600px] mx-auto pb-12">
       <div>
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-[#0F172A]">
-          Campaign DNA & Multi-Signal Clusters
+          Campaign DNA — Multi-Signal Correlation
         </h1>
         <p className="text-xs md:text-sm text-[#64748B] mt-1">
-          Correlated threat clusters linking shared domains, ASNs, infrastructure, and payload signatures
+          Deterministic correlation linking subject regex patterns, lookalike domains, ASN infrastructure, and payload hash signatures
         </p>
       </div>
+
+      {/* Interactive Pipeline Ribbon Stepper */}
+      <PipelineRibbon activeStage="campaign" />
 
       {/* Campaign Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -74,19 +78,19 @@ export default function CampaignsPage() {
 
               <div className="grid grid-cols-4 gap-2 text-center bg-[#F8FAFC] p-2 rounded-xl border border-[#E2E8F0] text-xs">
                 <div>
-                  <span className="block font-bold text-[#0F172A] text-sm">{c.email_count || 1}</span>
+                  <span className="block font-bold text-[#0F172A] text-sm">{c.email_count || 0}</span>
                   <span className="text-[10px] text-[#64748B]">Emails</span>
                 </div>
                 <div>
-                  <span className="block font-bold text-[#0F172A] text-sm">{c.domain_count || 4}</span>
+                  <span className="block font-bold text-[#0F172A] text-sm">{c.domain_count || 0}</span>
                   <span className="text-[10px] text-[#64748B]">Domains</span>
                 </div>
                 <div>
-                  <span className="block font-bold text-[#0F172A] text-sm">{c.ip_count || 3}</span>
+                  <span className="block font-bold text-[#0F172A] text-sm">{c.ip_count || 0}</span>
                   <span className="text-[10px] text-[#64748B]">IPs</span>
                 </div>
                 <div>
-                  <span className="block font-bold text-[#0F172A] text-sm">{c.asn_count || 2}</span>
+                  <span className="block font-bold text-[#0F172A] text-sm">{c.asn_count || 0}</span>
                   <span className="text-[10px] text-[#64748B]">ASNs</span>
                 </div>
               </div>

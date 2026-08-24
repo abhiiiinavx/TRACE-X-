@@ -16,6 +16,8 @@ from backend.app.api.reports import router as reports_router
 from backend.app.api.copilot import router as copilot_router
 from backend.app.api.dashboard import router as dashboard_router
 from backend.app.api.demo import router as demo_router
+from backend.app.api.audit import router as audit_router
+from backend.app.api.search import router as search_router
 
 app = FastAPI(
     title="TRACE-X Cyber-Forensics Platform API",
@@ -46,6 +48,8 @@ app.include_router(reports_router, prefix=f"{settings.API_V1_STR}/reports", tags
 app.include_router(copilot_router, prefix=f"{settings.API_V1_STR}/copilot", tags=["AI Investigation Copilot"])
 app.include_router(dashboard_router, prefix=f"{settings.API_V1_STR}/dashboard", tags=["SOC Dashboard Stats"])
 app.include_router(demo_router, prefix=f"{settings.API_V1_STR}/demo", tags=["Judge & Demo Utilities"])
+app.include_router(audit_router, prefix=f"{settings.API_V1_STR}/audit", tags=["Security Audit Ledger"])
+app.include_router(search_router, prefix=f"{settings.API_V1_STR}/search", tags=["Universal Cross-Table Search"])
 
 @app.on_event("startup")
 def on_startup():

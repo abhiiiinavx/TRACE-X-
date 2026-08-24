@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { FolderGit2, ArrowRight, User, ShieldCheck, CheckSquare, Lock } from "lucide-react";
 import { listCases, getCaseDetail, updateCaseStatus, toggleCaseAction } from "@/lib/api";
+import PipelineRibbon from "@/components/layout/PipelineRibbon";
 
 export default function ForensicCasesPage() {
   const [cases, setCases] = useState<any[]>([]);
@@ -89,6 +90,9 @@ export default function ForensicCasesPage() {
           ))}
         </div>
       </div>
+
+      {/* Interactive Pipeline Ribbon Stepper */}
+      <PipelineRibbon activeStage="actions" />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Cases List */}

@@ -62,48 +62,16 @@ export default function DashboardPage() {
 
   // Dynamic timeframe data
   const getTrendData = () => {
-    if (timeRange === "24h") {
-      return [
-        { day: "00:00", clean: 140, threats: 32 },
-        { day: "04:00", clean: 80, threats: 15 },
-        { day: "08:00", clean: 420, threats: 110 },
-        { day: "12:00", clean: 890, threats: 240 },
-        { day: "16:00", clean: 760, threats: 190 },
-        { day: "20:00", clean: 340, threats: 75 }
-      ];
-    }
-    if (timeRange === "30d") {
-      return [
-        { day: "Week 1", clean: 18200, threats: 4100 },
-        { day: "Week 2", clean: 22400, threats: 5900 },
-        { day: "Week 3", clean: 28900, threats: 7200 },
-        { day: "Week 4", clean: 34100, threats: 8800 }
-      ];
-    }
-    // Default 7 days
     if (stats?.threats_over_time && stats.threats_over_time.length > 0) {
       return stats.threats_over_time;
     }
     return [
-      { timestamp: "May 16", clean: 3600, threats: 1200 },
-      { timestamp: "May 17", clean: 3900, threats: 1800 },
-      { timestamp: "May 18", clean: 4100, threats: 2100 },
-      { timestamp: "May 19", clean: 4900, threats: 2400 },
-      { timestamp: "May 20", clean: 5400, threats: 3100 },
-      { timestamp: "May 21", clean: 6800, threats: 3600 },
-      { timestamp: "May 22", clean: 7800, threats: 3900 }
+      { timestamp: "00:00", clean: 0, threats: 0, critical: 0 },
+      { timestamp: "Now", clean: (stats?.total_analyzed || 0) - (stats?.threats_detected || 0), threats: stats?.threats_detected || 0, critical: stats?.critical_threats || 0 }
     ];
   };
 
   const VIBRANT_DONUT_COLORS = ["#EF4444", "#F97316", "#8B5CF6", "#F59E0B", "#10B981", "#0284C7"];
-
-  const TOP_THREAT_SENDERS = [
-    { email: "security@bank-alerts.com", risk: "High Risk", score: 98 },
-    { email: "noreply@free-prizes.win", risk: "High Risk", score: 92 },
-    { email: "admin@update-verification.com", risk: "High Risk", score: 87 },
-    { email: "support@your-account-secure.net", risk: "High Risk", score: 85 },
-    { email: "info@claim-your-bonus.today", risk: "Medium Risk", score: 78 }
-  ];
 
   return (
     <div className="space-y-6 max-w-[1600px] mx-auto pb-12">
@@ -143,11 +111,11 @@ export default function DashboardPage() {
           </div>
           <div className="mt-3">
             <div className="text-2xl font-extrabold text-[#0F172A] group-hover:text-[#4F46E5] transition-colors">
-              {stats?.total_analyzed || 45}
+              {stats?.total_analyzed ?? 0}
             </div>
             <div className="text-[11px] font-semibold text-[#4F46E5] mt-0.5 flex items-center gap-0.5">
               <ArrowUpRight className="w-3 h-3" />
-              <span>100% Ingested</span>
+              <span>Database Ledger</span>
             </div>
           </div>
         </div>
@@ -169,7 +137,7 @@ export default function DashboardPage() {
           </div>
           <div className="mt-3">
             <div className="text-2xl font-extrabold text-[#EF4444]">
-              {stats?.threats_detected || 31}
+              {stats?.threats_detected ?? 0}
             </div>
             <div className="text-[11px] font-semibold text-[#EF4444] mt-0.5 flex items-center gap-0.5">
               <ArrowUpRight className="w-3 h-3" />
@@ -195,7 +163,7 @@ export default function DashboardPage() {
           </div>
           <div className="mt-3">
             <div className="text-2xl font-extrabold text-[#EA580C]">
-              {stats?.critical_threats || 14}
+              {stats?.critical_threats ?? 0}
             </div>
             <div className="text-[11px] font-semibold text-[#EA580C] mt-0.5">
               DMARC / Spoofs
@@ -216,7 +184,7 @@ export default function DashboardPage() {
           </div>
           <div className="mt-3">
             <div className="text-2xl font-extrabold text-[#0F172A] group-hover:text-[#4F46E5]">
-              {stats?.bec_attempts || 8}
+              {stats?.bec_attempts ?? 0}
             </div>
             <div className="text-[11px] text-[#64748B] mt-0.5 font-medium">
               Exec Spoofing
@@ -237,7 +205,7 @@ export default function DashboardPage() {
           </div>
           <div className="mt-3">
             <div className="text-2xl font-extrabold text-[#8B5CF6]">
-              {stats?.active_campaigns || 3}
+              {stats?.active_campaigns ?? 0}
             </div>
             <div className="text-[11px] text-[#8B5CF6] font-semibold mt-0.5">
               Adversary DNA
@@ -258,7 +226,7 @@ export default function DashboardPage() {
           </div>
           <div className="mt-3">
             <div className="text-2xl font-extrabold text-[#0F172A] group-hover:text-[#4F46E5]">
-              {stats?.high_risk_infrastructure || 9}
+              {stats?.high_risk_infrastructure ?? 0}
             </div>
             <div className="text-[11px] text-[#64748B] mt-0.5 font-medium">
               Graph Matrix
@@ -366,7 +334,7 @@ export default function DashboardPage() {
                 </PieChart>
               </ResponsiveContainer>
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-lg font-extrabold text-[#0F172A]">{stats?.threats_detected || 31}</span>
+                <span className="text-lg font-extrabold text-[#0F172A]">{stats?.threats_detected ?? 0}</span>
                 <span className="text-[11px] text-[#64748B] font-medium">Total Threats</span>
               </div>
             </div>
@@ -479,39 +447,43 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Column 2: Top Threat Senders */}
+        {/* Column 2: High-Risk Threat Domains */}
         <div className="clean-card p-5 space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-[#0F172A]">Top Threat Senders</h3>
+            <h3 className="text-sm font-bold text-[#0F172A]">High-Risk Domains</h3>
             <Link href="/threat-intel" className="text-xs font-bold text-[#4F46E5] hover:underline">
               View All →
             </Link>
           </div>
 
           <div className="space-y-2.5">
-            {TOP_THREAT_SENDERS.map((sender, idx) => (
-              <div
-                key={idx}
-                onClick={() => router.push(`/threat-intel?q=${sender.email}`)}
-                className="flex items-center justify-between p-2.5 rounded-xl hover:bg-[#F8FAFC] border border-transparent hover:border-[#E2E8F0] transition-all cursor-pointer group"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 rounded-xl bg-[#FEF2F2] text-[#EF4444] flex items-center justify-center flex-shrink-0">
-                    <User className="w-4 h-4" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-xs font-bold text-[#0F172A] truncate group-hover:text-[#4F46E5] transition-colors">
-                      {sender.email}
+            {(!stats?.top_domains || stats.top_domains.length === 0) ? (
+              <p className="text-xs text-[#64748B] py-4 text-center">No high-risk domains recorded yet.</p>
+            ) : (
+              stats.top_domains.map((d: any, idx: number) => (
+                <div
+                  key={idx}
+                  onClick={() => router.push(`/threat-intel?q=${d.domain}`)}
+                  className="flex items-center justify-between p-2.5 rounded-xl hover:bg-[#F8FAFC] border border-transparent hover:border-[#E2E8F0] transition-all cursor-pointer group"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-9 h-9 rounded-xl bg-[#FFF7ED] text-[#EA580C] flex items-center justify-center flex-shrink-0">
+                      <User className="w-4 h-4" />
                     </div>
-                    <div className="text-[11px] text-[#EF4444] font-medium">{sender.risk}</div>
+                    <div className="min-w-0">
+                      <div className="text-xs font-bold text-[#0F172A] truncate group-hover:text-[#4F46E5] transition-colors font-mono">
+                        {d.domain}
+                      </div>
+                      <div className="text-[11px] text-[#EA580C] font-medium">{d.impersonating}</div>
+                    </div>
+                  </div>
+
+                  <div className="w-8 h-7 rounded-lg bg-[#FEF2F2] text-[#EF4444] font-bold text-xs flex items-center justify-center flex-shrink-0">
+                    {d.risk}
                   </div>
                 </div>
-
-                <div className="w-8 h-7 rounded-lg bg-[#FEF2F2] text-[#EF4444] font-bold text-xs flex items-center justify-center flex-shrink-0">
-                  {sender.score}
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
 
@@ -532,9 +504,9 @@ export default function DashboardPage() {
               {[
                 { name: "Real-time Scanning", status: "Active" },
                 { name: "AI Detection Engine", status: "Active" },
-                { name: "Threat Intelligence", status: "Updated" },
+                { name: "Threat Intelligence", status: "Offline Active" },
                 { name: "Spam Filter", status: "Active" },
-                { name: "Email Reputation DB", status: "Updated" }
+                { name: "Email Reputation DB", status: "Synchronized" }
               ].map((item) => (
                 <div key={item.name} className="flex items-center justify-between">
                   <span className="text-[#64748B] font-medium">{item.name}</span>
@@ -564,7 +536,7 @@ export default function DashboardPage() {
           </div>
           <div className="text-xs text-[#334155] leading-relaxed">
             <strong className="text-[#4F46E5] font-bold">AI Insight: </strong>
-            Continuous heuristic monitoring detected 31 active threats and 3 correlated campaign clusters. DMARC policy enforcement recommended for lookalike domain impersonation.
+            Database telemetry registers {stats?.threats_detected ?? 0} active threat incidents across {stats?.active_campaigns ?? 0} correlated campaign clusters with deterministic MTA hop inspection.
           </div>
         </div>
 

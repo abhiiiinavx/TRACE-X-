@@ -38,3 +38,17 @@ def test_copilot_query():
     data = response.json()
     assert "answer" in data
     assert len(data["evidence_sources"]) > 0
+
+def test_audit_logs():
+    response = client.get("/api/v1/audit/logs")
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+
+def test_universal_search():
+    response = client.get("/api/v1/search?q=paypa1")
+    assert response.status_code == 200
+    data = response.json()
+    assert "total_count" in data
+    assert "results" in data
+    assert "categories" in data

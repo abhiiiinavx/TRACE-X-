@@ -243,7 +243,6 @@ class DashboardStats(BaseModel):
     top_ips: List[Dict[str, Any]]
     country_distribution: List[Dict[str, Any]]
 
-# Audit Log Schema
 class AuditLogResponse(BaseModel):
     id: str
     user_id: Optional[str] = None
@@ -253,7 +252,7 @@ class AuditLogResponse(BaseModel):
     target_id: Optional[str] = None
     details: Dict[str, Any] = {}
     ip_addr: Optional[str] = "127.0.0.1"
-    timestamp: datetime
+    created_at: datetime
 
     class Config:
         from_attributes = True

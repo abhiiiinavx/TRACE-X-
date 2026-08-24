@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Info, MapPin } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Info, MapPin, Globe, ShieldAlert } from "lucide-react";
+import "leaflet/dist/leaflet.css";
 
 interface GeoMapProps {
   ips: Array<{
@@ -12,6 +13,8 @@ interface GeoMapProps {
     lng?: number;
     asn?: string;
     asn_org?: string;
+    isp?: string;
+    hosting_provider?: string;
     is_vpn_proxy_tor?: boolean;
     attribution_confidence?: number;
     risk_score?: number;
@@ -19,13 +22,129 @@ interface GeoMapProps {
 }
 
 export default function GeoMap({ ips }: GeoMapProps) {
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<any>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const [selectedIp, setSelectedIp] = useState<any>(null);
+
+  const validIps = (ips || []).filter(
+    (ip) =>
+      typeof ip.lat === "number" &&
+      typeof ip.lng === "number" &&
+      !isNaN(ip.lat) &&
+      !isNaN(ip.lng) &&
+      (ip.lat !== 0 || ip.lng !== 0)
+  );
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  const validIps = ips.filter((ip) => ip.lat && ip.lng && ip.lat !== 0 && ip.lng !== 0);
+  useEffect(() => {
+    if (!isMounted || !mapContainerRef.current) return;
+
+    let isSubscribed = true;
+
+    // Dynamically import Leaflet client-side
+    import("leaflet").then((L) => {
+      if (!isSubscribed || !mapContainerRef.current) return;
+
+      // Clean up previous map instance if exists
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+
+      // Initialize map
+      const initialLat = validIps.length > 0 ? (validIps[0].lat as number) : 20.0;
+      const initialLng = validIps.length > 0 ? (validIps[0].lng as number) : 0.0;
+      const initialZoom = validIps.length > 0 ? 3 : 2;
+
+      const map = L.map(mapContainerRef.current, {
+        center: [initialLat, initialLng],
+        zoom: initialZoom,
+        minZoom: 2,
+        maxZoom: 18,
+        zoomControl: true,
+        attributionControl: false,
+      });
+
+      // Carto Light tiles matching the clean design system
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+        maxZoom: 19,
+        subdomains: "abcd",
+      }).addTo(map);
+
+      const markerBounds: [number, number][] = [];
+
+      validIps.forEach((node) => {
+        const isHigh = (node.risk_score || 0) > 70;
+        const color = isHigh ? "#EF4444" : "#4F46E5";
+
+        const customIcon = L.divIcon({
+          className: "custom-leaflet-marker",
+          html: `
+            <div style="position: relative; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;">
+              <span style="position: absolute; width: 22px; height: 22px; border-radius: 9999px; background-color: ${color}; opacity: 0.35; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></span>
+              <span style="position: relative; width: 12px; height: 12px; border-radius: 9999px; background-color: ${color}; border: 2px solid #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"></span>
+            </div>
+          `,
+          iconSize: [22, 22],
+          iconAnchor: [11, 11],
+          popupAnchor: [0, -12],
+        });
+
+        const popupContent = `
+          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 11px; color: #0F172A; min-width: 220px; line-height: 1.4;">
+            <div style="font-family: monospace; font-weight: 700; font-size: 13px; color: #4F46E5; margin-bottom: 2px;">
+              ${node.ip}
+            </div>
+            <div style="color: #64748B; font-weight: 600; margin-bottom: 6px;">
+              ${node.city ? `${node.city}, ` : ""}${node.country || "Unknown Region"}
+            </div>
+            <div style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 6px 8px; margin-bottom: 6px;">
+              <div style="color: #64748B; font-size: 10px; text-transform: uppercase; font-weight: 700;">Network / ASN</div>
+              <div style="font-weight: 600; color: #0F172A; word-break: break-all;">${node.asn || "AS-Unknown"} ${node.asn_org || ""}</div>
+              ${node.isp || node.hosting_provider ? `<div style="color: #64748B; font-size: 10px; margin-top: 2px;">Hosting: ${node.hosting_provider || node.isp}</div>` : ""}
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-weight: 600;">
+              <span>Attribution Confidence:</span>
+              <span style="color: #16A34A; font-weight: 700;">${node.attribution_confidence || 75}%</span>
+            </div>
+            <div style="font-size: 9.5px; color: #94A3B8; border-top: 1px solid #F1F5F9; padding-top: 4px; line-height: 1.3;">
+              Coordinates represent probable network infrastructure and do not establish the physical location of an attacker.
+            </div>
+          </div>
+        `;
+
+        const marker = L.marker([node.lat as number, node.lng as number], { icon: customIcon })
+          .addTo(map)
+          .bindPopup(popupContent);
+
+        marker.on("click", () => {
+          setSelectedIp(node);
+        });
+
+        markerBounds.push([node.lat as number, node.lng as number]);
+      });
+
+      if (markerBounds.length > 1) {
+        map.fitBounds(markerBounds, { padding: [30, 30], maxZoom: 8 });
+      } else if (markerBounds.length === 1) {
+        map.setView(markerBounds[0], 5);
+      }
+
+      mapInstanceRef.current = map;
+    });
+
+    return () => {
+      isSubscribed = false;
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+    };
+  }, [isMounted, ips]);
 
   if (!isMounted) {
     return (
@@ -37,14 +156,13 @@ export default function GeoMap({ ips }: GeoMapProps) {
 
   return (
     <div className="space-y-4">
-      {/* Attribution Standard Caveat Banner */}
+      {/* Probabilistic Attribution Standard Notice */}
       <div className="clean-card p-4 text-xs flex items-start gap-3 bg-[#F8FAFC]">
         <Info className="w-4 h-4 text-[#4F46E5] flex-shrink-0 mt-0.5" />
         <div>
-          <span className="text-[#0F172A] font-bold">Probabilistic Infrastructure Attribution Standard:</span>
+          <span className="text-[#0F172A] font-bold">Probabilistic Infrastructure Attribution:</span>
           <p className="text-[11px] text-[#64748B] mt-0.5 leading-relaxed">
-            Geographic coordinates denote probable BGP routing hubs, hosting facilities, and intermediate relay infrastructure. 
-            TRACE-X does not claim confirmed physical residence of individual threat actors.
+            Coordinates represent probable network/hosting infrastructure and do not establish the physical location or identity of an attacker. BGP routing hubs, hosting providers, and intermediate relay infrastructure are derived from deterministic network telemetry.
           </p>
         </div>
       </div>
@@ -52,101 +170,84 @@ export default function GeoMap({ ips }: GeoMapProps) {
       {/* Map Display & IP Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Map Canvas */}
-        <div className="lg:col-span-2 h-88 clean-card flex flex-col justify-between p-4 relative overflow-hidden">
-          <div className="flex items-center justify-between z-10">
+        <div className="lg:col-span-2 h-[420px] clean-card flex flex-col justify-between p-4 relative overflow-hidden">
+          <div className="flex items-center justify-between mb-3 z-10">
             <span className="text-xs font-bold text-[#0F172A] flex items-center gap-1.5">
               <MapPin className="w-4 h-4 text-[#4F46E5]" />
-              <span>Infrastructure Plot Canvas</span>
+              <span>Interactive Infrastructure Geolocation Map</span>
             </span>
             <span className="text-xs font-bold bg-[#EEF2FF] text-[#4F46E5] px-2.5 py-0.5 rounded-full">
-              {validIps.length} Nodes Mapped
+              {validIps.length} {validIps.length === 1 ? "Node" : "Nodes"} Mapped
             </span>
           </div>
 
-          {/* Coordinates Grid */}
-          <div className="relative w-full h-64 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] p-3 overflow-hidden">
-            {/* World grid background lines */}
-            <div
-              className="absolute inset-0 opacity-40 pointer-events-none"
-              style={{
-                backgroundImage: "radial-gradient(#CBD5E1 1px, transparent 1px)",
-                backgroundSize: "24px 24px"
-              }}
-            ></div>
+          {validIps.length === 0 ? (
+            <div className="flex-1 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] p-8 flex flex-col items-center justify-center text-center space-y-2">
+              <Globe className="w-10 h-10 text-[#94A3B8]" />
+              <div className="text-xs font-bold text-[#0F172A]">Routing Coordinates Unavailable</div>
+              <p className="text-[11px] text-[#64748B] max-w-sm leading-relaxed">
+                No public geographic coordinates could be reliably extracted from the observed relay hops in this message. TRACE-X never fabricates mock coordinates.
+              </p>
+            </div>
+          ) : (
+            <div className="relative w-full flex-1 rounded-2xl border border-[#E2E8F0] overflow-hidden z-0">
+              <div ref={mapContainerRef} className="w-full h-full min-h-[320px]" />
+            </div>
+          )}
 
-            {validIps.map((ip, idx) => {
-              const topPercent = Math.max(12, Math.min(85, ((90 - (ip.lat || 0)) / 180) * 100));
-              const leftPercent = Math.max(10, Math.min(90, (((ip.lng || 0) + 180) / 360) * 100));
-              const isHighRisk = (ip.risk_score || 0) > 70;
-
-              return (
-                <div
-                  key={idx}
-                  style={{ top: `${topPercent}%`, left: `${leftPercent}%` }}
-                  className="absolute transform -translate-x-1/2 -translate-y-1/2 group cursor-pointer"
-                >
-                  <div className="relative flex items-center justify-center">
-                    <span
-                      className={`animate-ping absolute inline-flex h-4 w-4 rounded-full opacity-60 ${
-                        isHighRisk ? "bg-[#EF4444]" : "bg-[#4F46E5]"
-                      }`}
-                    ></span>
-                    <span
-                      className={`relative inline-flex rounded-full h-3 w-3 ${
-                        isHighRisk ? "bg-[#EF4444]" : "bg-[#4F46E5]"
-                      } border-2 border-white shadow-sm`}
-                    ></span>
-                  </div>
-
-                  {/* Tooltip */}
-                  <div className="hidden group-hover:block absolute bottom-5 left-1/2 -translate-x-1/2 bg-white border border-[#E2E8F0] p-3 rounded-xl text-xs text-[#0F172A] min-w-[200px] z-30 pointer-events-none shadow-xl">
-                    <div className="font-mono font-bold text-[#4F46E5]">{ip.ip}</div>
-                    <div className="text-[#64748B] text-[11px] mt-0.5">{ip.city}, {ip.country}</div>
-                    <div className="text-[10px] text-[#94A3B8] mt-0.5 truncate">{ip.asn_org}</div>
-                    <div className="mt-2 pt-1.5 border-t border-[#F1F5F9] flex justify-between font-semibold">
-                      <span className="text-[#64748B]">Confidence:</span>
-                      <span className="text-[#16A34A]">{ip.attribution_confidence || 75}%</span>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="text-[11px] text-[#64748B] flex items-center justify-between font-medium">
+          <div className="text-[11px] text-[#64748B] flex items-center justify-between font-medium mt-3">
             <span>Projection: WGS84 Geodetic</span>
             <span>BGP Routing Matrix</span>
           </div>
         </div>
 
         {/* IP Nodes List */}
-        <div className="space-y-2.5 overflow-y-auto max-h-88">
-          {validIps.map((ip, idx) => (
-            <div key={idx} className="clean-card p-3.5 text-xs space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="font-mono font-bold text-[#0F172A]">{ip.ip}</span>
-                <span
-                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                    (ip.risk_score || 0) > 70
-                      ? "bg-[#FEF2F2] text-[#EF4444]"
-                      : "bg-[#F0FDF4] text-[#16A34A]"
+        <div className="space-y-2.5 overflow-y-auto max-h-[420px]">
+          {validIps.length === 0 ? (
+            <div className="clean-card p-6 text-center text-xs text-[#64748B] space-y-1">
+              <ShieldAlert className="w-6 h-6 text-[#94A3B8] mx-auto mb-1" />
+              <div className="font-semibold text-[#0F172A]">No IP Geolocation Records</div>
+              <p className="text-[11px]">No public sender hops were observed.</p>
+            </div>
+          ) : (
+            validIps.map((ip, idx) => {
+              const isSelected = selectedIp?.ip === ip.ip;
+              return (
+                <div
+                  key={idx}
+                  onClick={() => setSelectedIp(ip)}
+                  className={`clean-card p-3.5 text-xs space-y-1.5 cursor-pointer transition-all ${
+                    isSelected
+                      ? "border-[#4F46E5] ring-2 ring-[#EEF2FF] bg-white shadow-sm"
+                      : "hover:border-[#CBD5E1]"
                   }`}
                 >
-                  {(ip.risk_score || 0) > 70 ? "HIGH RISK" : "ROUTING"}
-                </span>
-              </div>
-              <div className="text-[#64748B] text-xs">
-                {ip.city ? `${ip.city}, ` : ""}{ip.country || "Unknown"}
-              </div>
-              <div className="text-[11px] text-[#94A3B8] font-mono truncate">
-                {ip.asn} • {ip.asn_org}
-              </div>
-              <div className="pt-2 border-t border-[#F1F5F9] flex items-center justify-between text-[11px]">
-                <span className="text-[#64748B]">Attribution Confidence:</span>
-                <span className="font-bold text-[#0F172A]">{ip.attribution_confidence || 75}%</span>
-              </div>
-            </div>
-          ))}
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono font-bold text-[#0F172A]">{ip.ip}</span>
+                    <span
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        (ip.risk_score || 0) > 70
+                          ? "bg-[#FEF2F2] text-[#EF4444]"
+                          : "bg-[#F0FDF4] text-[#16A34A]"
+                      }`}
+                    >
+                      {(ip.risk_score || 0) > 70 ? "HIGH RISK" : "ROUTING"}
+                    </span>
+                  </div>
+                  <div className="text-[#64748B] text-xs">
+                    {ip.city ? `${ip.city}, ` : ""}{ip.country || "Unknown"}
+                  </div>
+                  <div className="text-[11px] text-[#94A3B8] font-mono truncate">
+                    {ip.asn} • {ip.asn_org}
+                  </div>
+                  <div className="pt-2 border-t border-[#F1F5F9] flex items-center justify-between text-[11px]">
+                    <span className="text-[#64748B]">Attribution Confidence:</span>
+                    <span className="font-bold text-[#16A34A]">{ip.attribution_confidence || 75}%</span>
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
       </div>
     </div>
