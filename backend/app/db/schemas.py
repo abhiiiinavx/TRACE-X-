@@ -157,6 +157,8 @@ class EmailAnalysisResponse(BaseModel):
     domains_intel: List[DomainIntel] = []
     ips_intel: List[IPIntel] = []
     campaign_association: Optional[Dict[str, Any]] = None
+    trace_available: bool = True
+    trace_explanation: Optional[str] = None
     created_at: datetime
 
     class Config:
@@ -240,3 +242,35 @@ class DashboardStats(BaseModel):
     top_domains: List[Dict[str, Any]]
     top_ips: List[Dict[str, Any]]
     country_distribution: List[Dict[str, Any]]
+
+# Audit Log Schema
+class AuditLogResponse(BaseModel):
+    id: str
+    user_id: Optional[str] = None
+    username: str
+    action: str
+    target_type: Optional[str] = None
+    target_id: Optional[str] = None
+    details: Dict[str, Any] = {}
+    ip_addr: Optional[str] = "127.0.0.1"
+    timestamp: datetime
+
+    class Config:
+        from_attributes = True
+
+# Unified Search Result
+class SearchItem(BaseModel):
+    id: str
+    type: str  # email, domain, ip, url, attachment, case, campaign
+    title: str
+    subtitle: Optional[str] = None
+    risk_score: Optional[int] = None
+    severity: Optional[str] = None
+    link: str
+    metadata: Dict[str, Any] = {}
+
+class UnifiedSearchResult(BaseModel):
+    query: str
+    total_count: int
+    results: List[SearchItem]
+    categories: Dict[str, int]

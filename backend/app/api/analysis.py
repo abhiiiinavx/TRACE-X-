@@ -60,8 +60,6 @@ def run_forensic_pipeline(parsed_data: Dict[str, Any], db: Session, user_email: 
     # 4. Hop Relay Reconstruction
     hops = HopReconstructor.parse_received_headers(received_headers)
     sender_ips = [h.ip for h in hops if h.ip and not h.is_private_ip]
-    if not sender_ips and domain_intel.a_records:
-        sender_ips = domain_intel.a_records
 
     # 5. IP Intelligence
     ips_intel_list = [threat_intel_provider.get_ip_intel(ip) for ip in sender_ips]
@@ -398,20 +396,16 @@ def get_email_analysis(email_id: str, db: Session = Depends(get_db)):
     from_domain = email.from_addr.split("@")[-1].lower() if "@" in email.from_addr else email.from_addr.lower()
     domain_intel = threat_intel_provider.get_domain_intel(from_domain)
     
-    # Extract hops
+    # Extract hops strictly from observed Received headers
     raw_hops = HopReconstructor.parse_received_headers([h.header_value for h in email.headers if h.header_name.lower() == "received"])
-    if not raw_hops:
-        # Fallback to simulated hop from domain
-        raw_hops = HopReconstructor.parse_received_headers([
-            f"Received: from mail.{from_domain} (194.36.189.44) by mx.google.com with ESMTPS; Sun, 23 Aug 2026 10:14:02 +0000",
-            f"Received: from vps-gateway.net (185.220.101.5) by mail.{from_domain} with SMTP; Sun, 23 Aug 2026 10:14:00 +0000"
-        ])
+    trace_available = len(raw_hops) > 0
+    trace_explanation = None if trace_available else "Insufficient Received-header evidence for routing reconstruction."
 
-    # Extract IPs
+    # Extract IPs strictly from observed hops (no fabrication)
     ips_intel = []
     seen_ips = set()
     for h in raw_hops:
-        if h.ip and h.ip not in seen_ips:
+        if h.ip and not h.is_private_ip and h.ip not in seen_ips:
             seen_ips.add(h.ip)
             ips_intel.append(threat_intel_provider.get_ip_intel(h.ip))
 
@@ -468,5 +462,7 @@ def get_email_analysis(email_id: str, db: Session = Depends(get_db)):
         domains_intel=[domain_intel],
         ips_intel=ips_intel,
         campaign_association=camp_assoc,
+        trace_available=trace_available,
+        trace_explanation=trace_explanation,
         created_at=email.created_at
     )
